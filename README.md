@@ -86,13 +86,15 @@ cargo test --workspace
 
 ## Deploying to GitHub
 
-1. Push this repository to GitHub.
-2. In **Settings → Pages**, set **Source** to **GitHub Actions**.
-3. Push to `main` (or run the *Deploy to GitHub Pages* workflow manually).
-   The site publishes to `https://<user>.github.io/<repo>/`.
+Push to `main` (or run the *Deploy to GitHub Pages* workflow manually). The
+workflow builds the site and force-pushes it to the `gh-pages` branch, which
+GitHub Pages picks up automatically — the site publishes to
+`https://<user>.github.io/<repo>/` a minute or two later.
 
 The workflow injects the repo name as `--base-href`, so it works under any
-repository name without configuration.
+repository name without configuration. If the site doesn't appear after the
+first deploy, check **Settings → Pages** — Source should be
+**Deploy from a branch** / `gh-pages`.
 
 ## Disclaimer
 
