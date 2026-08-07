@@ -1,0 +1,16 @@
+# Rust
+/target/
+
+# Generated WASM package (built by wasm-pack; see README)
+/frontend/src/app/wasm/pkg/
+
+# Node / Angular
+node_modules/
+/frontend/dist/
+/frontend/.angular/
+
+# Editors / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/

@@ -1,0 +1,18 @@
+[package]
+name = "income-calc-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Axum REST API for the income calculator"
+
+[[bin]]
+name = "income-calc-server"
+path = "src/main.rs"
+
+[dependencies]
+income-calc-core = { path = "../core" }
+axum = "0.8"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }
+tower-http = { version = "0.6", features = ["cors", "fs"] }
+serde_json = { workspace = true }

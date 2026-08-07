@@ -1,0 +1,11 @@
+[package]
+name = "income-calc-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Pure income / tax calculation engine (US tax year 2025)"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
