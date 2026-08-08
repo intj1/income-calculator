@@ -1,0 +1,33 @@
+<div class="donut-wrap">
+  <svg viewBox="0 0 220 220" role="img" [attr.aria-label]="ariaLabel()">
+    @for (arc of arcs(); track arc.label) {
+      <path
+        [attr.d]="arc.path"
+        [attr.fill]="'var(' + arc.colorVar + ')'"
+        stroke="var(--surface-1)"
+        stroke-width="2"
+        [class.dim]="hovered() !== null && hovered() !== arc.label"
+        (mouseenter)="hovered.set(arc.label)"
+        (mouseleave)="hovered.set(null)"
+      />
+    }
+    @for (arc of arcs(); track arc.label) {
+      @if (arc.showLabel) {
+        <text [attr.x]="arc.labelX" [attr.y]="arc.labelY" class="slice-label">
+          {{ fmtPct(arc.share) }}
+        </text>
+      }
+    }
+    <text [attr.x]="CX" [attr.y]="CY - 6" class="center-title">{{ centerLabel() }}</text>
+    <text [attr.x]="CX" [attr.y]="CY + 16" class="center-value">{{ centerValue() }}</text>
+  </svg>
+  <ul class="legend">
+    @for (arc of arcs(); track arc.label) {
+      <li (mouseenter)="hovered.set(arc.label)" (mouseleave)="hovered.set(null)">
+        <span class="swatch" [style.background]="'var(' + arc.colorVar + ')'"></span>
+        <span class="name">{{ arc.label }}</span>
+        <span class="val">{{ fmtMoney(arc.value) }}</span>
+      </li>
+    }
+  </ul>
+</div>

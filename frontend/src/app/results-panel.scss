@@ -1,0 +1,140 @@
+.hero-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.hero {
+  display: grid;
+  gap: 0.75rem;
+}
+.hero-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.hero-value {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.hero-per {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.hero-sub {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.hero-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.chip {
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.warnings ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  display: grid;
+  gap: 0.25rem;
+}
+.budget-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+.budget-cell {
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.2rem;
+}
+.budget-num {
+  font-size: 1.3rem;
+  font-weight: 650;
+  color: var(--text-primary);
+}
+.budget-cap {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.fine {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0.6rem 0 0;
+}
+.insights {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.insights li {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  display: grid;
+  gap: 0.2rem;
+}
+.insight-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+.insight-value {
+  color: var(--delta-good);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.insight-detail {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+.solver-row {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.solver-row label {
+  max-width: 220px;
+}
+.solver-answer {
+  display: grid;
+  gap: 0.1rem;
+  padding-bottom: 0.2rem;
+}
+.solver-num {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.solver-cap {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.freq-select {
+  width: auto;
+}

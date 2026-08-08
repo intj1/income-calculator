@@ -1,0 +1,41 @@
+<div class="wrap">
+  <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" aria-label="Federal tax brackets">
+    @for (seg of segments(); track seg.slice.lower) {
+      <rect
+        [attr.x]="seg.x"
+        y="28"
+        [attr.width]="seg.width"
+        [attr.height]="BAR_H"
+        rx="4"
+        [attr.fill]="'var(' + seg.color + ')'"
+        stroke="var(--surface-1)"
+        stroke-width="2"
+        (mouseenter)="hovered.set(seg)"
+        (mouseleave)="hovered.set(null)"
+      />
+      @if (seg.showLabel) {
+        <text [attr.x]="seg.x + seg.width / 2" y="20" class="rate-label">
+          {{ fmtRate(seg.slice.rate) }}
+        </text>
+      }
+    }
+    <line x1="0" [attr.y1]="28 + BAR_H + 6" [attr.x2]="W" [attr.y2]="28 + BAR_H + 6" class="baseline" />
+    <text x="0" [attr.y]="H - 6" class="axis-label" text-anchor="start">$0</text>
+    <text [attr.x]="W" [attr.y]="H - 6" class="axis-label" text-anchor="end">
+      {{ fmtCompact(taxable()) }}
+    </text>
+  </svg>
+  @if (hovered(); as seg) {
+    <div class="tooltip">
+      <strong>{{ fmtRate(seg.slice.rate) }} bracket</strong>
+      <span>
+        {{ fmtMoney(seg.slice.lower) }} –
+        {{ seg.slice.upper === null ? '∞' : fmtMoney(seg.slice.upper) }}
+      </span>
+      <span>Income here: {{ fmtMoney(seg.slice.income_in_bracket) }}</span>
+      <span>Tax here: {{ fmtMoney(seg.slice.tax_in_bracket) }}</span>
+    </div>
+  } @else {
+    <div class="tooltip hint">Hover a segment: how your taxable income fills each federal bracket.</div>
+  }
+</div>

@@ -17,68 +17,8 @@ interface CompareRow {
   selector: 'app-compare-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CalculatorFormComponent, CompareBarsChartComponent],
-  template: `
-    @if (!store.scenarioB()) {
-      <section class="card">
-        <h2>Scenario comparison</h2>
-        <p class="muted">
-          Compare your current setup against a what-if: a raise, a move to another state,
-          a different 401(k) rate, going freelance…
-        </p>
-        <button type="button" class="btn" (click)="store.startComparison()">
-          Duplicate current scenario as “Scenario B”
-        </button>
-      </section>
-    } @else {
-      <section class="card">
-        <header class="card-head">
-          <h2>Scenario A vs B</h2>
-          <button type="button" class="btn danger sm" (click)="store.clearComparison()">
-            Remove comparison
-          </button>
-        </header>
-        @if (store.output(); as a) {
-          @if (store.outputB(); as b) {
-            <app-compare-bars-chart [outputA]="a" [outputB]="b" />
-          }
-        }
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr><th></th><th class="num">A (current)</th><th class="num">B (what-if)</th><th class="num">Δ B−A</th></tr>
-            </thead>
-            <tbody>
-              @for (row of rows(); track row.label) {
-                <tr>
-                  <td>{{ row.label }}</td>
-                  <td class="num">{{ fmt(row, row.a) }}</td>
-                  <td class="num">{{ fmt(row, row.b) }}</td>
-                  <td class="num" [class.delta-good]="isGood(row)" [class.delta-bad]="isBad(row)">
-                    {{ delta(row) }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </section>
-      <h3 class="section-label">Edit Scenario B</h3>
-      <app-calculator-form scenario="B" />
-    }
-  `,
-  styles: `
-    .muted {
-      color: var(--text-muted);
-      font-size: 0.85rem;
-    }
-    .section-label {
-      margin: 1.5rem 0 0.5rem;
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-    }
-    .delta-good { color: var(--delta-good); font-weight: 600; }
-    .delta-bad { color: var(--delta-bad); font-weight: 600; }
-  `,
+  templateUrl: './compare-page.html',
+  styleUrl: './compare-page.scss',
 })
 export class ComparePageComponent {
   constructor(readonly store: StoreService) {}
