@@ -4,6 +4,7 @@ import { StoreService } from './store.service';
 import { DonutChartComponent, DonutSlice } from './charts/donut-chart';
 import { BracketChartComponent } from './charts/bracket-chart';
 import { WaterfallChartComponent } from './charts/waterfall-chart';
+import { SankeyChartComponent } from './charts/sankey-chart';
 import { money, moneyExact, pct } from './format';
 import { PeriodAmounts } from './models';
 
@@ -26,7 +27,13 @@ const PAYCHECKS_PER_YEAR: Record<PaycheckFreq, number> = {
 @Component({
   selector: 'app-results-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DonutChartComponent, BracketChartComponent, WaterfallChartComponent, FormsModule],
+  imports: [
+    DonutChartComponent,
+    BracketChartComponent,
+    WaterfallChartComponent,
+    SankeyChartComponent,
+    FormsModule,
+  ],
   template: `
     @if (store.output(); as out) {
       <section class="card hero-card">
@@ -108,6 +115,11 @@ const PAYCHECKS_PER_YEAR: Record<PaycheckFreq, number> = {
           </ul>
         </section>
       }
+
+      <section class="card">
+        <h2>Money flow</h2>
+        <app-sankey-chart [output]="out" />
+      </section>
 
       <section class="card">
         <h2>Where the money goes</h2>

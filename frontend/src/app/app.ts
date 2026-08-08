@@ -84,6 +84,7 @@ type Tab = 'calculator' | 'explore' | 'projection' | 'compare' | 'about';
                 <li>Monte Carlo savings projections (10th–90th percentile bands) with a FIRE-style target line and probability of success</li>
                 <li>Shareable scenario links (everything stays in the URL — nothing is uploaded)</li>
                 <li>Explore charts: gross→net income curve with effective/marginal rate panels, your net income recomputed in all 50 states + DC, a gross→net waterfall, and A/B comparison bars</li>
+                <li>Money-flow Sankey diagram: every dollar traced from each income source through gross into taxes, deductions, take-home, and the 50/30/20 split</li>
                 <li>Multiple income sources: salary, hourly (with overtime), bonus, commission, tips, self-employment, rental, interest</li>
                 <li>All pay frequencies: hourly → annual, with per-period take-home tables</li>
                 <li>Federal brackets, standard/itemized deduction, all four filing statuses</li>

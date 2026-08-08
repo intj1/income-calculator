@@ -57,12 +57,17 @@ export class StoreService {
     }
   });
 
-  /** Gross→net curve sweeping the first income source to 2.5× (min $200k). */
+  /** Gross→net curve sweeping the first income source to 2.5× (min $200k
+   *  annual, or $100/hr for hourly sources whose amount is a rate). */
   readonly incomeCurve = computed(() => {
     if (!this.wasm.ready()) return [];
     const input = this.input();
-    const current = input.incomes[0]?.amount ?? 0;
-    const max = Math.max(200_000, current * 2.5);
+    const first = input.incomes[0];
+    const current = first?.amount ?? 0;
+    const max =
+      first?.frequency === 'hourly'
+        ? Math.max(100, current * 2.5)
+        : Math.max(200_000, current * 2.5);
     try {
       return this.wasm.incomeCurve(input, 80, max);
     } catch {

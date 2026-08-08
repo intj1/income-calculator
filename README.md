@@ -35,6 +35,8 @@ Deploys to **GitHub Pages** automatically on every push to `main`.
   limit), life insurance, union dues, garnishments
 
 **Charts & exploration**
+- **Money-flow Sankey**: every dollar traced from each income source through
+  gross into taxes, deductions, take-home, and the 50/30/20 budget split
 - Gross→net **income curve**: your scenario recomputed at 80 income levels, with
   effective and marginal rate panels (bracket steps visible), and a "you are
   here" marker
