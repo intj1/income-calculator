@@ -1,0 +1,14 @@
+.muted {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0;
+}
+.takeaway {
+  margin-top: 0.75rem;
+}
+.takeaway strong {
+  color: var(--delta-good);
+}
+.takeaway strong.cost {
+  color: var(--delta-bad);
+}

@@ -1,0 +1,36 @@
+<div class="wrap">
+  <div class="legend" role="list">
+    <span role="listitem"><i class="swatch s1"></i> Scenario A (current)</span>
+    <span role="listitem"><i class="swatch s2"></i> Scenario B (what-if)</span>
+  </div>
+  <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" aria-label="Scenario A versus B">
+    @for (tick of yTicks(); track tick.value) {
+      <line [attr.x1]="PAD.left" [attr.y1]="tick.y" [attr.x2]="W - PAD.right" [attr.y2]="tick.y" class="grid" />
+      <text [attr.x]="PAD.left - 8" [attr.y]="tick.y + 4" class="axis" text-anchor="end">{{ tick.label }}</text>
+    }
+    @for (group of groups(); track group.label; let i = $index) {
+      <rect
+        [attr.x]="xBar(i, 0)" [attr.y]="y(group.a)" [attr.width]="barW()" [attr.height]="y(0) - y(group.a)"
+        rx="4" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"
+        (mouseenter)="hovered.set(group)" (mouseleave)="hovered.set(null)"
+      />
+      <rect
+        [attr.x]="xBar(i, 1)" [attr.y]="y(group.b)" [attr.width]="barW()" [attr.height]="y(0) - y(group.b)"
+        rx="4" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"
+        (mouseenter)="hovered.set(group)" (mouseleave)="hovered.set(null)"
+      />
+      <text [attr.x]="xGroupCenter(i)" [attr.y]="H - 8" class="axis" text-anchor="middle">{{ group.label }}</text>
+    }
+    <line [attr.x1]="PAD.left" [attr.y1]="y(0)" [attr.x2]="W - PAD.right" [attr.y2]="y(0)" class="baseline" />
+  </svg>
+  @if (hovered(); as group) {
+    <div class="tooltip">
+      <strong>{{ group.label }}</strong>
+      <span><i class="swatch s1"></i>{{ fmtMoney(group.a) }}</span>
+      <span><i class="swatch s2"></i>{{ fmtMoney(group.b) }}</span>
+      <span class="muted">Δ {{ fmtMoney(group.b - group.a) }}</span>
+    </div>
+  } @else {
+    <div class="tooltip hint">Hover a pair of bars for exact values.</div>
+  }
+</div>

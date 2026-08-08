@@ -34,84 +34,8 @@ const COL_X = [130, 350, 545, 688];
 @Component({
   selector: 'app-sankey-chart',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="wrap">
-      <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" [attr.aria-label]="ariaLabel()">
-        @for (link of links(); track link.source + link.target) {
-          <path
-            [attr.d]="link.path"
-            [attr.fill]="'var(' + link.colorVar + ')'"
-            class="ribbon"
-            [class.dim]="hovered() !== null && hovered() !== link"
-            [class.lit]="hovered() === link"
-            (mouseenter)="hovered.set(link)"
-            (mouseleave)="hovered.set(null)"
-          />
-        }
-        @for (node of nodes(); track node.id) {
-          <rect
-            [attr.x]="node.x"
-            [attr.y]="node.y"
-            [attr.width]="NODE_W"
-            [attr.height]="node.h"
-            rx="3"
-            [attr.fill]="'var(' + node.colorVar + ')'"
-            stroke="var(--surface-1)"
-            stroke-width="1.5"
-          />
-          @if (node.labelSide === 'left') {
-            <text [attr.x]="node.x - 8" [attr.y]="node.y + node.h / 2 - 2" class="node-label" text-anchor="end">
-              {{ node.label }}
-            </text>
-            <text [attr.x]="node.x - 8" [attr.y]="node.y + node.h / 2 + 11" class="node-value" text-anchor="end">
-              {{ fmtCompact(node.value) }}
-            </text>
-          } @else if (node.labelSide === 'right') {
-            <text [attr.x]="node.x + NODE_W + 8" [attr.y]="node.y + node.h / 2 - 2" class="node-label">
-              {{ node.label }}
-            </text>
-            <text [attr.x]="node.x + NODE_W + 8" [attr.y]="node.y + node.h / 2 + 11" class="node-value">
-              {{ fmtCompact(node.value) }}
-            </text>
-          } @else {
-            <text [attr.x]="node.x + NODE_W / 2" [attr.y]="node.y - 8" class="node-label" text-anchor="middle">
-              {{ node.label }} · {{ fmtCompact(node.value) }}
-            </text>
-          }
-        }
-      </svg>
-      @if (hovered(); as link) {
-        <div class="tooltip">
-          <strong>{{ labelOf(link.source) }} → {{ labelOf(link.target) }}</strong>
-          <span>{{ fmtMoney(link.value) }}</span>
-          <span class="muted">{{ shareOf(link) }} of gross</span>
-        </div>
-      } @else {
-        <div class="tooltip hint">
-          Every dollar from source to destination — ribbon width is proportional to the amount.
-        </div>
-      }
-    </div>
-  `,
-  styles: `
-    .wrap { display: grid; gap: 0.4rem; }
-    svg { width: 100%; }
-    .ribbon {
-      opacity: 0.35;
-      transition: opacity 120ms ease;
-      cursor: pointer;
-    }
-    .ribbon.dim { opacity: 0.12; }
-    .ribbon.lit { opacity: 0.6; }
-    .node-label { font-size: 11.5px; fill: var(--text-secondary); }
-    .node-value { font-size: 10.5px; fill: var(--text-muted); font-variant-numeric: tabular-nums; }
-    .tooltip {
-      display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem;
-      color: var(--text-primary); min-height: 1.2rem; font-variant-numeric: tabular-nums;
-    }
-    .tooltip .muted { color: var(--text-muted); }
-    .tooltip.hint { color: var(--text-muted); }
-  `,
+  templateUrl: './sankey-chart.html',
+  styleUrl: './sankey-chart.scss',
 })
 export class SankeyChartComponent {
   readonly output = input.required<CalculationOutput>();

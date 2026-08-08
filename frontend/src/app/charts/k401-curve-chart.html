@@ -1,0 +1,52 @@
+<div class="wrap">
+  <div class="legend" role="list">
+    <span role="listitem"><i class="swatch s1"></i> Take-home</span>
+    <span role="listitem"><i class="swatch s5"></i> Retirement dollars (you + match)</span>
+    <span role="listitem"><i class="swatch s3"></i> Total wealth captured</span>
+    <span role="listitem"><i class="swatch marker"></i> Current setting</span>
+  </div>
+  <svg
+    [attr.viewBox]="'0 0 ' + W + ' ' + H"
+    role="img"
+    aria-label="Take-home, retirement dollars, and total wealth by 401(k) contribution percentage"
+    (mousemove)="onMove($event)"
+    (mouseleave)="hover.set(null)"
+  >
+    @for (tick of yTicks(); track tick.value) {
+      <line [attr.x1]="PAD.left" [attr.y1]="tick.y" [attr.x2]="W - PAD.right" [attr.y2]="tick.y" class="grid" />
+      <text [attr.x]="PAD.left - 8" [attr.y]="tick.y + 4" class="axis" text-anchor="end">{{ tick.label }}</text>
+    }
+    @for (tick of xTicks(); track tick.value) {
+      <text [attr.x]="tick.x" [attr.y]="H - 8" class="axis" text-anchor="middle">{{ tick.value }}%</text>
+    }
+    <line [attr.x1]="PAD.left" [attr.y1]="H - PAD.bottom" [attr.x2]="W - PAD.right" [attr.y2]="H - PAD.bottom" class="baseline" />
+    <path [attr.d]="pathOf('net')" class="line s1" />
+    <path [attr.d]="pathOf('ret')" class="line s5" />
+    <path [attr.d]="pathOf('total')" class="line s3" />
+    @if (currentPercent() > 0) {
+      <line [attr.x1]="x(currentPercent())" [attr.y1]="PAD.top" [attr.x2]="x(currentPercent())" [attr.y2]="H - PAD.bottom" class="marker-line" />
+    }
+    @if (hover(); as h) {
+      <line [attr.x1]="x(h.percent)" [attr.y1]="PAD.top" [attr.x2]="x(h.percent)" [attr.y2]="H - PAD.bottom" class="crosshair" />
+      <circle [attr.cx]="x(h.percent)" [attr.cy]="y(h.net_annual)" r="4" class="dot s1" />
+      <circle [attr.cx]="x(h.percent)" [attr.cy]="y(h.retirement_total)" r="4" class="dot s5" />
+      <circle [attr.cx]="x(h.percent)" [attr.cy]="y(h.total_wealth)" r="4" class="dot s3" />
+    }
+  </svg>
+  @if (hover(); as h) {
+    <div class="tooltip">
+      <strong>{{ h.percent.toFixed(0) }}% contribution</strong>
+      <span><i class="swatch s1"></i>{{ fmtMoney(h.net_annual) }}</span>
+      <span><i class="swatch s5"></i>{{ fmtMoney(h.retirement_total) }}</span>
+      <span><i class="swatch s3"></i>{{ fmtMoney(h.total_wealth) }}</span>
+      @if (h.employer_match > 0) {
+        <span class="muted">incl. {{ fmtMoney(h.employer_match) }} match</span>
+      }
+    </div>
+  } @else {
+    <div class="tooltip hint">
+      The aqua line rising means contributing captures more total wealth — the tax savings and
+      match outweigh the take-home hit.
+    </div>
+  }
+</div>

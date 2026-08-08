@@ -1,0 +1,39 @@
+.wrap {
+  display: grid;
+  gap: 0.4rem;
+}
+svg {
+  width: 100%;
+}
+rect {
+  cursor: pointer;
+}
+.rate-label {
+  font-size: 12px;
+  fill: var(--text-secondary);
+  text-anchor: middle;
+}
+.axis-label {
+  font-size: 11px;
+  fill: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.baseline {
+  stroke: var(--baseline);
+  stroke-width: 1;
+}
+.tooltip {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  min-height: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+.tooltip strong {
+  color: var(--text-primary);
+}
+.tooltip.hint {
+  color: var(--text-muted);
+}

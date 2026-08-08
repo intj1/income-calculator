@@ -1,0 +1,11 @@
+.muted {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.section-label {
+  margin: 1.5rem 0 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+.delta-good { color: var(--delta-good); font-weight: 600; }
+.delta-bad { color: var(--delta-bad); font-weight: 600; }

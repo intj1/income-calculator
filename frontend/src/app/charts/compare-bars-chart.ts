@@ -15,62 +15,8 @@ const PAD = { top: 22, right: 12, bottom: 30, left: 56 };
 @Component({
   selector: 'app-compare-bars-chart',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="wrap">
-      <div class="legend" role="list">
-        <span role="listitem"><i class="swatch s1"></i> Scenario A (current)</span>
-        <span role="listitem"><i class="swatch s2"></i> Scenario B (what-if)</span>
-      </div>
-      <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" aria-label="Scenario A versus B">
-        @for (tick of yTicks(); track tick.value) {
-          <line [attr.x1]="PAD.left" [attr.y1]="tick.y" [attr.x2]="W - PAD.right" [attr.y2]="tick.y" class="grid" />
-          <text [attr.x]="PAD.left - 8" [attr.y]="tick.y + 4" class="axis" text-anchor="end">{{ tick.label }}</text>
-        }
-        @for (group of groups(); track group.label; let i = $index) {
-          <rect
-            [attr.x]="xBar(i, 0)" [attr.y]="y(group.a)" [attr.width]="barW()" [attr.height]="y(0) - y(group.a)"
-            rx="4" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"
-            (mouseenter)="hovered.set(group)" (mouseleave)="hovered.set(null)"
-          />
-          <rect
-            [attr.x]="xBar(i, 1)" [attr.y]="y(group.b)" [attr.width]="barW()" [attr.height]="y(0) - y(group.b)"
-            rx="4" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"
-            (mouseenter)="hovered.set(group)" (mouseleave)="hovered.set(null)"
-          />
-          <text [attr.x]="xGroupCenter(i)" [attr.y]="H - 8" class="axis" text-anchor="middle">{{ group.label }}</text>
-        }
-        <line [attr.x1]="PAD.left" [attr.y1]="y(0)" [attr.x2]="W - PAD.right" [attr.y2]="y(0)" class="baseline" />
-      </svg>
-      @if (hovered(); as group) {
-        <div class="tooltip">
-          <strong>{{ group.label }}</strong>
-          <span><i class="swatch s1"></i>{{ fmtMoney(group.a) }}</span>
-          <span><i class="swatch s2"></i>{{ fmtMoney(group.b) }}</span>
-          <span class="muted">Δ {{ fmtMoney(group.b - group.a) }}</span>
-        </div>
-      } @else {
-        <div class="tooltip hint">Hover a pair of bars for exact values.</div>
-      }
-    </div>
-  `,
-  styles: `
-    .wrap { display: grid; gap: 0.4rem; }
-    svg { width: 100%; }
-    rect { cursor: pointer; }
-    .legend { display: flex; gap: 1.25rem; font-size: 0.8rem; color: var(--text-secondary); }
-    .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 0.4rem; }
-    .swatch.s1 { background: var(--series-1); }
-    .swatch.s2 { background: var(--series-2); }
-    .grid { stroke: var(--gridline); stroke-width: 1; }
-    .baseline { stroke: var(--baseline); stroke-width: 1; }
-    .axis { font-size: 11px; fill: var(--text-muted); font-variant-numeric: tabular-nums; }
-    .tooltip {
-      display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; align-items: center;
-      color: var(--text-primary); min-height: 1.2rem; font-variant-numeric: tabular-nums;
-    }
-    .tooltip .muted { color: var(--text-muted); }
-    .tooltip.hint { color: var(--text-muted); }
-  `,
+  templateUrl: './compare-bars-chart.html',
+  styleUrl: './compare-bars-chart.scss',
 })
 export class CompareBarsChartComponent {
   readonly outputA = input.required<CalculationOutput>();

@@ -1,0 +1,217 @@
+<section class="card">
+  <header class="card-head">
+    <h2>Income sources</h2>
+    <button type="button" class="btn ghost" (click)="addIncome()">+ Add source</button>
+  </header>
+  @for (src of inp().incomes; track $index; let i = $index) {
+    <div class="income-card">
+      <div class="grid-3">
+        <label>
+          <span>Label</span>
+          <input type="text" [ngModel]="src.label" (ngModelChange)="setIncome(i, 'label', $event)" />
+        </label>
+        <label>
+          <span>Type</span>
+          <select [ngModel]="src.kind" (ngModelChange)="setIncome(i, 'kind', $event)">
+            @for (k of kinds; track k.value) {
+              <option [value]="k.value">{{ k.label }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          <span>Frequency</span>
+          <select [ngModel]="src.frequency" (ngModelChange)="setIncome(i, 'frequency', $event)">
+            @for (f of frequencies; track f.value) {
+              <option [value]="f.value">{{ f.label }}</option>
+            }
+          </select>
+        </label>
+      </div>
+      <div class="grid-3">
+        <label>
+          <span>Amount {{ src.frequency === 'hourly' ? '($ / hour)' : '($)' }}</span>
+          <input type="number" min="0" [ngModel]="src.amount" (ngModelChange)="setIncomeNum(i, 'amount', $event)" />
+        </label>
+        @if (src.frequency === 'hourly') {
+          <label>
+            <span>Hours / week</span>
+            <input type="number" min="0" max="168" [ngModel]="src.hours_per_week" (ngModelChange)="setIncomeNum(i, 'hours_per_week', $event)" />
+          </label>
+          <label>
+            <span>Weeks / year</span>
+            <input type="number" min="0" max="52" [ngModel]="src.weeks_per_year" (ngModelChange)="setIncomeNum(i, 'weeks_per_year', $event)" />
+          </label>
+          <label>
+            <span>Overtime hours / week</span>
+            <input type="number" min="0" [ngModel]="src.overtime_hours_per_week" (ngModelChange)="setIncomeNum(i, 'overtime_hours_per_week', $event)" />
+          </label>
+          <label>
+            <span>Overtime multiplier</span>
+            <input type="number" min="1" step="0.5" [ngModel]="src.overtime_multiplier" (ngModelChange)="setIncomeNum(i, 'overtime_multiplier', $event)" />
+          </label>
+        } @else if (src.frequency === 'weekly' || src.frequency === 'daily') {
+          <label>
+            <span>Weeks / year</span>
+            <input type="number" min="0" max="52" [ngModel]="src.weeks_per_year" (ngModelChange)="setIncomeNum(i, 'weeks_per_year', $event)" />
+          </label>
+        }
+      </div>
+      @if (inp().incomes.length > 1) {
+        <button type="button" class="btn danger sm" (click)="removeIncome(i)">Remove</button>
+      }
+    </div>
+  }
+</section>
+
+<section class="card">
+  <h2>Filing & location</h2>
+  <div class="grid-3">
+    <label>
+      <span>Tax year</span>
+      <select [ngModel]="inp().tax_year" (ngModelChange)="setNum('tax_year', $event, true)">
+        @for (y of store.taxYears(); track y) {
+          <option [ngValue]="y">{{ y }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      <span>Filing status</span>
+      <select [ngModel]="inp().filing_status" (ngModelChange)="set('filing_status', $event)">
+        <option value="single">Single</option>
+        <option value="married_joint">Married filing jointly</option>
+        <option value="married_separate">Married filing separately</option>
+        <option value="head_of_household">Head of household</option>
+      </select>
+    </label>
+    <label>
+      <span>State</span>
+      <select [ngModel]="inp().state" (ngModelChange)="set('state', $event)">
+        @for (s of store.states(); track s.code) {
+          <option [value]="s.code">{{ s.name }}{{ s.no_tax ? ' (no income tax)' : s.approximate ? ' (approx.)' : '' }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      <span>Children under 17</span>
+      <input type="number" min="0" max="20" [ngModel]="inp().dependents_under_17" (ngModelChange)="setNum('dependents_under_17', $event, true)" />
+    </label>
+    <label>
+      <span>Other dependents</span>
+      <input type="number" min="0" max="20" [ngModel]="inp().other_dependents" (ngModelChange)="setNum('other_dependents', $event, true)" />
+    </label>
+    <label>
+      <span>Itemized deductions ($/yr, if above standard)</span>
+      <input type="number" min="0" [ngModel]="inp().itemized_deductions" (ngModelChange)="setNum('itemized_deductions', $event)" />
+    </label>
+    <label class="check">
+      <input type="checkbox" [ngModel]="inp().age_50_plus" (ngModelChange)="set('age_50_plus', $event)" />
+      <span>Age 50+ (catch-up limits)</span>
+    </label>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Investment income</h2>
+  <div class="grid-3">
+    <label>
+      <span>Short-term capital gains ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().capital_gains.short_term" (ngModelChange)="setCg('short_term', $event)" />
+    </label>
+    <label>
+      <span>Long-term capital gains ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().capital_gains.long_term" (ngModelChange)="setCg('long_term', $event)" />
+    </label>
+    <label>
+      <span>Qualified dividends ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().capital_gains.qualified_dividends" (ngModelChange)="setCg('qualified_dividends', $event)" />
+    </label>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Pre-tax deductions & benefits</h2>
+  <div class="grid-3">
+    <label>
+      <span>Traditional 401(k) (% of pay)</span>
+      <input type="number" min="0" max="100" [ngModel]="inp().pretax.k401_percent" (ngModelChange)="setPre('k401_percent', $event)" />
+    </label>
+    <label>
+      <span>Traditional 401(k) (extra $/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().pretax.k401_amount" (ngModelChange)="setPre('k401_amount', $event)" />
+    </label>
+    <label>
+      <span>Employer match (% of your contribution)</span>
+      <input type="number" min="0" max="200" [ngModel]="inp().pretax.employer_match_percent" (ngModelChange)="setPre('employer_match_percent', $event)" />
+    </label>
+    <label>
+      <span>Match cap (% of salary)</span>
+      <input type="number" min="0" max="100" [ngModel]="inp().pretax.employer_match_limit_percent" (ngModelChange)="setPre('employer_match_limit_percent', $event)" />
+    </label>
+    <label>
+      <span>Traditional IRA ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().pretax.traditional_ira" (ngModelChange)="setPre('traditional_ira', $event)" />
+    </label>
+    <label>
+      <span>HSA ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().pretax.hsa" (ngModelChange)="setPre('hsa', $event)" />
+    </label>
+    <label>
+      <span>FSA ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().pretax.fsa" (ngModelChange)="setPre('fsa', $event)" />
+    </label>
+    <label>
+      <span>Health insurance ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().pretax.health_insurance" (ngModelChange)="setPre('health_insurance', $event)" />
+    </label>
+    <label>
+      <span>Dental insurance ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().pretax.dental_insurance" (ngModelChange)="setPre('dental_insurance', $event)" />
+    </label>
+    <label>
+      <span>Vision insurance ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().pretax.vision_insurance" (ngModelChange)="setPre('vision_insurance', $event)" />
+    </label>
+    <label>
+      <span>Commuter benefits ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().pretax.commuter" (ngModelChange)="setPre('commuter', $event)" />
+    </label>
+    <label>
+      <span>Other pre-tax ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().pretax.other" (ngModelChange)="setPre('other', $event)" />
+    </label>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Post-tax deductions</h2>
+  <div class="grid-3">
+    <label>
+      <span>Roth 401(k) (% of pay)</span>
+      <input type="number" min="0" max="100" [ngModel]="inp().posttax.roth_401k_percent" (ngModelChange)="setPost('roth_401k_percent', $event)" />
+    </label>
+    <label>
+      <span>Roth 401(k) (extra $/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().posttax.roth_401k_amount" (ngModelChange)="setPost('roth_401k_amount', $event)" />
+    </label>
+    <label>
+      <span>Roth IRA ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().posttax.roth_ira" (ngModelChange)="setPost('roth_ira', $event)" />
+    </label>
+    <label>
+      <span>Life insurance ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().posttax.life_insurance" (ngModelChange)="setPost('life_insurance', $event)" />
+    </label>
+    <label>
+      <span>Union dues ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().posttax.union_dues" (ngModelChange)="setPost('union_dues', $event)" />
+    </label>
+    <label>
+      <span>Garnishments ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().posttax.garnishments" (ngModelChange)="setPost('garnishments', $event)" />
+    </label>
+    <label>
+      <span>Other post-tax ($/yr)</span>
+      <input type="number" min="0" [ngModel]="inp().posttax.other" (ngModelChange)="setPost('other', $event)" />
+    </label>
+  </div>
+</section>

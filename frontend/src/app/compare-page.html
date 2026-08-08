@@ -1,0 +1,47 @@
+@if (!store.scenarioB()) {
+  <section class="card">
+    <h2>Scenario comparison</h2>
+    <p class="muted">
+      Compare your current setup against a what-if: a raise, a move to another state,
+      a different 401(k) rate, going freelance…
+    </p>
+    <button type="button" class="btn" (click)="store.startComparison()">
+      Duplicate current scenario as “Scenario B”
+    </button>
+  </section>
+} @else {
+  <section class="card">
+    <header class="card-head">
+      <h2>Scenario A vs B</h2>
+      <button type="button" class="btn danger sm" (click)="store.clearComparison()">
+        Remove comparison
+      </button>
+    </header>
+    @if (store.output(); as a) {
+      @if (store.outputB(); as b) {
+        <app-compare-bars-chart [outputA]="a" [outputB]="b" />
+      }
+    }
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th></th><th class="num">A (current)</th><th class="num">B (what-if)</th><th class="num">Δ B−A</th></tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.label) {
+            <tr>
+              <td>{{ row.label }}</td>
+              <td class="num">{{ fmt(row, row.a) }}</td>
+              <td class="num">{{ fmt(row, row.b) }}</td>
+              <td class="num" [class.delta-good]="isGood(row)" [class.delta-bad]="isBad(row)">
+                {{ delta(row) }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <h3 class="section-label">Edit Scenario B</h3>
+  <app-calculator-form scenario="B" />
+}
