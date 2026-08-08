@@ -10,7 +10,7 @@ pub mod fica;
 pub mod state;
 pub mod types;
 
-pub use calc::{calculate, project, solve_required_gross};
+pub use calc::{calculate, income_curve, project, solve_required_gross, state_sweep};
 pub use federal::supported_years;
 pub use types::*;
 
@@ -366,6 +366,48 @@ mod tests {
     fn state_list_complete() {
         let list = state_list();
         assert_eq!(list.len(), 52); // 50 states + DC + NONE
+    }
+
+    #[test]
+    fn income_curve_monotonic_net() {
+        let input = salary_input(85_000.0);
+        let curve = income_curve(&input, 60, 250_000.0);
+        assert_eq!(curve.len(), 60);
+        assert_eq!(curve[0].amount, 0.0);
+        assert!((curve.last().unwrap().amount - 250_000.0).abs() < 0.01);
+        for pair in curve.windows(2) {
+            assert!(
+                pair[1].net_annual >= pair[0].net_annual - 0.01,
+                "net must not decrease"
+            );
+        }
+        // Marginal rate at the top should exceed the bottom (progressive taxation).
+        assert!(curve.last().unwrap().marginal_rate > curve[1].marginal_rate);
+    }
+
+    #[test]
+    fn state_sweep_covers_all_and_sorts() {
+        let input = salary_input(100_000.0);
+        let sweep = state_sweep(&input);
+        assert_eq!(sweep.len(), 52);
+        for pair in sweep.windows(2) {
+            assert!(
+                pair[0].net_annual >= pair[1].net_annual,
+                "must be sorted by net desc"
+            );
+        }
+        // No-income-tax states should all share the maximum net.
+        let max_net = sweep[0].net_annual;
+        for entry in sweep.iter().filter(|e| e.no_tax) {
+            assert!(
+                (entry.net_annual - max_net).abs() < 0.01,
+                "{} not at max",
+                entry.code
+            );
+        }
+        // California must tax more than a no-tax state.
+        let ca = sweep.iter().find(|e| e.code == "CA").unwrap();
+        assert!(ca.net_annual < max_net);
     }
 
     #[test]

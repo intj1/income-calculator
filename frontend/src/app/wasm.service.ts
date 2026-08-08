@@ -1,18 +1,22 @@
 import { Injectable, signal } from '@angular/core';
 import init, {
   calculate,
+  income_curve,
   project,
   solve_required_gross,
+  state_sweep,
   states,
   tax_years,
 } from './wasm/pkg/income_calc';
 import {
   CalculationInput,
   CalculationOutput,
+  CurvePoint,
   ProjectionInput,
   ProjectionOutput,
   SolveResult,
   StateListEntry,
+  StateNetEntry,
 } from './models';
 
 /** Loads the Rust/WASM calculation engine and exposes typed wrappers. */
@@ -58,5 +62,17 @@ export class WasmService {
     const out = JSON.parse(solve_required_gross(JSON.stringify(input), desiredNetAnnual));
     if (out.error) throw new Error(out.error);
     return out as SolveResult;
+  }
+
+  incomeCurve(input: CalculationInput, points: number, maxAmount: number): CurvePoint[] {
+    const out = JSON.parse(income_curve(JSON.stringify(input), points, maxAmount));
+    if (out.error) throw new Error(out.error);
+    return out as CurvePoint[];
+  }
+
+  stateSweep(input: CalculationInput): StateNetEntry[] {
+    const out = JSON.parse(state_sweep(JSON.stringify(input)));
+    if (out.error) throw new Error(out.error);
+    return out as StateNetEntry[];
   }
 }

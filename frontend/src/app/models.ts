@@ -161,6 +161,25 @@ export interface SolveResult {
   achieved_net_annual: number;
 }
 
+export interface CurvePoint {
+  amount: number;
+  gross_annual: number;
+  net_annual: number;
+  total_tax: number;
+  effective_rate: number;
+  marginal_rate: number;
+}
+
+export interface StateNetEntry {
+  code: string;
+  name: string;
+  net_annual: number;
+  state_tax: number;
+  total_tax: number;
+  approximate: boolean;
+  no_tax: boolean;
+}
+
 export interface CalculationOutput {
   tax_year: number;
   gross: GrossSummary;

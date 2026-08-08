@@ -57,6 +57,29 @@ export class StoreService {
     }
   });
 
+  /** Gross→net curve sweeping the first income source to 2.5× (min $200k). */
+  readonly incomeCurve = computed(() => {
+    if (!this.wasm.ready()) return [];
+    const input = this.input();
+    const current = input.incomes[0]?.amount ?? 0;
+    const max = Math.max(200_000, current * 2.5);
+    try {
+      return this.wasm.incomeCurve(input, 80, max);
+    } catch {
+      return [];
+    }
+  });
+
+  /** Net income per state under the current scenario, sorted best-first. */
+  readonly stateSweep = computed(() => {
+    if (!this.wasm.ready()) return [];
+    try {
+      return this.wasm.stateSweep(this.input());
+    } catch {
+      return [];
+    }
+  });
+
   constructor(private wasm: WasmService) {
     this.restore();
     this.restoreFromShareLink();

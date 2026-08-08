@@ -53,6 +53,32 @@ pub fn solve_required_gross(input_json: &str, desired_net_annual: f64) -> String
     }
 }
 
+/// Gross→net curve sweeping the first income source. JSON CalculationInput
+/// in, JSON Vec<CurvePoint> out.
+#[wasm_bindgen]
+pub fn income_curve(input_json: &str, points: usize, max_amount: f64) -> String {
+    match serde_json::from_str::<income_calc_core::CalculationInput>(input_json) {
+        Ok(input) => {
+            let curve = income_calc_core::income_curve(&input, points, max_amount);
+            serde_json::to_string(&curve).unwrap_or_else(|e| error_json(&e.to_string()))
+        }
+        Err(e) => error_json(&format!("invalid input: {e}")),
+    }
+}
+
+/// Net income per state for the same scenario, sorted highest first. JSON
+/// CalculationInput in, JSON Vec<StateNetEntry> out.
+#[wasm_bindgen]
+pub fn state_sweep(input_json: &str) -> String {
+    match serde_json::from_str::<income_calc_core::CalculationInput>(input_json) {
+        Ok(input) => {
+            let sweep = income_calc_core::state_sweep(&input);
+            serde_json::to_string(&sweep).unwrap_or_else(|e| error_json(&e.to_string()))
+        }
+        Err(e) => error_json(&format!("invalid input: {e}")),
+    }
+}
+
 fn error_json(msg: &str) -> String {
     format!(
         "{{\"error\":{}}}",

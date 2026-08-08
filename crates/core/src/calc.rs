@@ -494,6 +494,62 @@ pub fn solve_required_gross(base: &CalculationInput, desired_net_annual: f64) ->
     }
 }
 
+/// Sweep the first income source's amount from 0 to `max_amount` and return
+/// the gross→net curve with effective and combined marginal rates. Powers the
+/// "how your take-home scales" chart.
+pub fn income_curve(base: &CalculationInput, points: usize, max_amount: f64) -> Vec<CurvePoint> {
+    let mut input = base.clone();
+    if input.incomes.is_empty() {
+        return Vec::new();
+    }
+    let n = points.clamp(2, 400);
+    let max = if max_amount > 0.0 {
+        max_amount
+    } else {
+        300_000.0
+    };
+    let mut curve = Vec::with_capacity(n);
+    for i in 0..n {
+        let amount = max * i as f64 / (n - 1) as f64;
+        input.incomes[0].amount = amount;
+        let out = calculate(&input);
+        curve.push(CurvePoint {
+            amount,
+            gross_annual: out.gross.total_annual,
+            net_annual: out.net_annual,
+            total_tax: out.total_tax,
+            effective_rate: out.rates.effective_total,
+            marginal_rate: out.rates.marginal_federal + out.rates.marginal_state,
+        });
+    }
+    curve
+}
+
+/// Recompute the scenario in every state (incl. "no state") and return net
+/// income per state, sorted highest-net first. Powers the state comparison
+/// chart.
+pub fn state_sweep(base: &CalculationInput) -> Vec<StateNetEntry> {
+    let mut input = base.clone();
+    let mut entries: Vec<StateNetEntry> = state::all_states()
+        .iter()
+        .map(|s| {
+            input.state = s.code.to_string();
+            let out = calculate(&input);
+            StateNetEntry {
+                code: s.code.to_string(),
+                name: s.name.to_string(),
+                net_annual: out.net_annual,
+                state_tax: out.state_tax.tax,
+                total_tax: out.total_tax,
+                approximate: matches!(s.model, state::Model::FlatApprox(_)),
+                no_tax: matches!(s.model, state::Model::None),
+            }
+        })
+        .collect();
+    entries.sort_by(|a, b| b.net_annual.partial_cmp(&a.net_annual).unwrap());
+    entries
+}
+
 // ---- Projection ----
 
 /// Deterministic xorshift64* PRNG so WASM/API results are reproducible.
