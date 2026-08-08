@@ -1,13 +1,16 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { StoreService } from './store.service';
+import { WasmService } from './wasm.service';
 import { ProjectionChartComponent } from './charts/projection-chart';
-import { money } from './format';
+import { RothTradChartComponent } from './charts/roth-trad-chart';
+import { RothTradInput, defaultRothTradInput } from './models';
+import { money, pct } from './format';
 
 @Component({
   selector: 'app-projection-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ProjectionChartComponent],
+  imports: [FormsModule, ProjectionChartComponent, RothTradChartComponent],
   template: `
     <section class="card">
       <h2>Savings & investment projection</h2>
@@ -98,6 +101,65 @@ import { money } from './format';
         <app-projection-chart [years]="proj.years" [target]="store.projection().target_balance" />
       </section>
     }
+
+    <section class="card">
+      <h2>Roth vs Traditional</h2>
+      <p class="muted">
+        Equal out-of-pocket comparison: the traditional account gets the full pre-tax amount; the
+        Roth gets the same after-tax outlay. Traditional wins when your retirement tax rate is
+        below today's marginal rate — the break-even is exactly today's rate.
+      </p>
+      <div class="grid-3">
+        <label>
+          <span>Annual contribution (pre-tax $)</span>
+          <input type="number" min="0" [ngModel]="rt().annual_contribution" (ngModelChange)="setRt('annual_contribution', $event)" />
+        </label>
+        <label>
+          <span>Years until retirement</span>
+          <input type="number" min="1" max="60" [ngModel]="rt().years" (ngModelChange)="setRt('years', $event, true)" />
+        </label>
+        <label>
+          <span>Annual return (%)</span>
+          <input type="number" min="0" max="30" step="0.5" [ngModel]="rt().annual_return_percent" (ngModelChange)="setRt('annual_return_percent', $event)" />
+        </label>
+        <label>
+          <span>Contribution growth (%/yr)</span>
+          <input type="number" min="0" max="20" step="0.5" [ngModel]="rt().contribution_growth_percent" (ngModelChange)="setRt('contribution_growth_percent', $event)" />
+        </label>
+        <label>
+          <span>Marginal tax rate today (%)</span>
+          <input type="number" min="0" max="60" step="0.5" [ngModel]="rt().current_marginal_rate_percent" (ngModelChange)="setRt('current_marginal_rate_percent', $event)" />
+        </label>
+        <label>
+          <span>Expected tax rate in retirement (%)</span>
+          <input type="number" min="0" max="60" step="0.5" [ngModel]="rt().retirement_tax_rate_percent" (ngModelChange)="setRt('retirement_tax_rate_percent', $event)" />
+        </label>
+      </div>
+      @if (myMarginal(); as m) {
+        <button type="button" class="btn ghost sm" (click)="useMyMarginal()">
+          Use my marginal rate ({{ fmtPct(m) }})
+        </button>
+      }
+      @if (rothTradOut(); as rtOut) {
+        <div class="stat-row rt-stats">
+          <div class="stat">
+            <span class="stat-num">{{ fmtMoney(rtOut.final_traditional) }}</span>
+            <span class="stat-cap">Traditional, after tax</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">{{ fmtMoney(rtOut.final_roth) }}</span>
+            <span class="stat-cap">Roth</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num" [class.good]="rtOut.traditional_advantage >= 0" [class.bad]="rtOut.traditional_advantage < 0">
+              {{ rtOut.traditional_advantage >= 0 ? 'Traditional' : 'Roth' }} +{{ fmtMoney(abs(rtOut.traditional_advantage)) }}
+            </span>
+            <span class="stat-cap">Winner at these rates</span>
+          </div>
+        </div>
+        <app-roth-trad-chart [years]="rtOut.years" />
+      }
+    </section>
   `,
   styles: `
     .fine {
@@ -132,10 +194,53 @@ import { money } from './format';
       font-size: 0.72rem;
       color: var(--text-muted);
     }
+    .rt-stats {
+      margin-top: 1rem;
+    }
+    .stat-num.good {
+      color: var(--delta-good);
+    }
+    .stat-num.bad {
+      color: var(--series-2);
+    }
   `,
 })
 export class ProjectionPageComponent {
-  constructor(readonly store: StoreService) {}
+  readonly rt = signal<RothTradInput>(defaultRothTradInput());
+
+  constructor(
+    readonly store: StoreService,
+    private wasm: WasmService,
+  ) {}
+
+  readonly rothTradOut = computed(() => {
+    if (!this.wasm.ready()) return null;
+    try {
+      return this.wasm.rothVsTraditional(this.rt());
+    } catch {
+      return null;
+    }
+  });
+
+  readonly myMarginal = computed(() => {
+    const out = this.store.output();
+    if (!out) return null;
+    return out.rates.marginal_federal + out.rates.marginal_state;
+  });
+
+  useMyMarginal(): void {
+    const m = this.myMarginal();
+    if (m !== null) this.setRt('current_marginal_rate_percent', Math.round(m * 10000) / 100);
+  }
+
+  setRt(field: keyof RothTradInput, value: unknown, integer = false): void {
+    const n = typeof value === 'number' ? value : parseFloat(String(value));
+    const safe = !isFinite(n) || n < 0 ? 0 : integer ? Math.floor(n) : n;
+    this.rt.set({ ...this.rt(), [field]: safe });
+  }
+
+  abs = Math.abs;
+  fmtPct = (v: number) => pct(v, 1);
 
   set(field: string, value: unknown, integer = false): void {
     const n = typeof value === 'number' ? value : parseFloat(String(value));

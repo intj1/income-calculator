@@ -79,6 +79,32 @@ pub fn state_sweep(input_json: &str) -> String {
     }
 }
 
+/// 401(k) contribution optimizer sweep (0..max_percent). JSON
+/// CalculationInput in, JSON Vec<K401Point> out.
+#[wasm_bindgen]
+pub fn k401_curve(input_json: &str, max_percent: f64) -> String {
+    match serde_json::from_str::<income_calc_core::CalculationInput>(input_json) {
+        Ok(input) => {
+            let curve = income_calc_core::k401_curve(&input, max_percent);
+            serde_json::to_string(&curve).unwrap_or_else(|e| error_json(&e.to_string()))
+        }
+        Err(e) => error_json(&format!("invalid input: {e}")),
+    }
+}
+
+/// Roth vs Traditional lifetime comparison. JSON RothTradInput in,
+/// JSON RothTradOutput out.
+#[wasm_bindgen]
+pub fn roth_vs_traditional(input_json: &str) -> String {
+    match serde_json::from_str::<income_calc_core::RothTradInput>(input_json) {
+        Ok(input) => {
+            let out = income_calc_core::roth_vs_traditional(&input);
+            serde_json::to_string(&out).unwrap_or_else(|e| error_json(&e.to_string()))
+        }
+        Err(e) => error_json(&format!("invalid input: {e}")),
+    }
+}
+
 fn error_json(msg: &str) -> String {
     format!(
         "{{\"error\":{}}}",

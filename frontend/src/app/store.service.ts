@@ -80,6 +80,16 @@ export class StoreService {
     }
   });
 
+  /** 401(k) contribution optimizer sweep, 0-50% of pay. */
+  readonly k401Curve = computed(() => {
+    if (!this.wasm.ready()) return [];
+    try {
+      return this.wasm.k401Curve(this.input(), 50);
+    } catch {
+      return [];
+    }
+  });
+
   constructor(private wasm: WasmService) {
     this.restore();
     this.restoreFromShareLink();

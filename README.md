@@ -23,8 +23,9 @@ Deploys to **GitHub Pages** automatically on every push to `main`.
 - Interactive federal bracket visualization
 
 **State tax**
-- All 50 states + DC: real progressive brackets for CA & NY, exact statutory rates
-  for flat-tax states, labeled effective-rate approximations for the rest
+- All 50 states + DC with real 2024/2025 progressive brackets and state standard
+  deductions (flat-tax states use exact statutory rates; no-tax states exact).
+  State credits, exemptions, and local/county taxes are not modeled.
 
 **Deductions & benefits**
 - Pre-tax: traditional 401(k) (% or $, IRS limits + catch-up), employer match,
@@ -39,6 +40,10 @@ Deploys to **GitHub Pages** automatically on every push to `main`.
   here" marker
 - **All-states comparison**: net income under every state's tax, sorted, with
   your state highlighted and the "what a move would be worth" takeaway
+- **401(k) optimizer curve**: take-home vs retirement dollars vs total wealth
+  at every contribution level, with a "value of +5%" takeaway
+- **Roth vs Traditional** lifetime chart (equal out-of-pocket method) with a
+  break-even readout and marginal-rate auto-fill
 - Gross→net **waterfall**, take-home **donut**, federal **bracket bar**,
   Monte Carlo **projection band**, and A/B **comparison bars** — all
   hand-rolled SVG with hover tooltips, no chart library
