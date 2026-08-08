@@ -232,6 +232,7 @@ version = "1.0.0"
 dependencies = [
  "axum",
  "income-calc-core",
+ "serde",
  "serde_json",
  "tokio",
  "tower-http",

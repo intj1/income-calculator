@@ -64,6 +64,7 @@ export interface CapitalGains {
 }
 
 export interface CalculationInput {
+  tax_year: number;
   incomes: IncomeSource[];
   filing_status: FilingStatus;
   state: string;
@@ -148,6 +149,18 @@ export interface GrossSummary {
   per_source: DeductionLine[];
 }
 
+export interface Insight {
+  title: string;
+  detail: string;
+  annual_value: number;
+}
+
+export interface SolveResult {
+  required_amount: number;
+  required_gross_annual: number;
+  achieved_net_annual: number;
+}
+
 export interface CalculationOutput {
   tax_year: number;
   gross: GrossSummary;
@@ -177,6 +190,9 @@ export interface CalculationOutput {
   rates: Rates;
   employer: EmployerCosts;
   budget: BudgetSuggestion;
+  tips_deduction: number;
+  overtime_deduction: number;
+  insights: Insight[];
   warnings: string[];
 }
 
@@ -187,6 +203,8 @@ export interface ProjectionInput {
   inflation_percent: number;
   contribution_growth_percent: number;
   years: number;
+  return_volatility_percent: number;
+  target_balance: number;
 }
 
 export interface ProjectionYear {
@@ -195,6 +213,8 @@ export interface ProjectionYear {
   interest_earned: number;
   balance: number;
   real_balance: number;
+  p10: number;
+  p90: number;
 }
 
 export interface ProjectionOutput {
@@ -203,6 +223,8 @@ export interface ProjectionOutput {
   final_real_balance: number;
   total_contributed: number;
   total_interest: number;
+  target_year_reached: number | null;
+  target_probability: number;
 }
 
 export interface StateListEntry {
@@ -227,6 +249,7 @@ export function defaultIncomeSource(): IncomeSource {
 
 export function defaultInput(): CalculationInput {
   return {
+    tax_year: 2025,
     incomes: [defaultIncomeSource()],
     filing_status: 'single',
     state: 'NONE',
@@ -269,5 +292,7 @@ export function defaultProjectionInput(): ProjectionInput {
     inflation_percent: 3,
     contribution_growth_percent: 2,
     years: 30,
+    return_volatility_percent: 15,
+    target_balance: 0,
   };
 }

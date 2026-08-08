@@ -21,6 +21,12 @@ interface HoverInfo {
       <div class="legend" role="list">
         <span role="listitem"><i class="swatch s1"></i> Balance (nominal)</span>
         <span role="listitem"><i class="swatch s2"></i> Balance (today's dollars)</span>
+        @if (hasBand()) {
+          <span role="listitem"><i class="swatch band"></i> 10th–90th percentile</span>
+        }
+        @if (target() > 0) {
+          <span role="listitem"><i class="swatch target-swatch"></i> Target</span>
+        }
       </div>
       <svg
         [attr.viewBox]="'0 0 ' + W + ' ' + H"
@@ -41,6 +47,12 @@ interface HoverInfo {
           </text>
         }
         <line [attr.x1]="PAD.left" [attr.y1]="H - PAD.bottom" [attr.x2]="W - PAD.right" [attr.y2]="H - PAD.bottom" class="baseline" />
+        @if (hasBand()) {
+          <path [attr.d]="bandPath()" class="band-area" />
+        }
+        @if (target() > 0 && targetY() !== null) {
+          <line [attr.x1]="PAD.left" [attr.y1]="targetY()!" [attr.x2]="W - PAD.right" [attr.y2]="targetY()!" class="target-line" />
+        }
         <path [attr.d]="pathNominal()" class="line s1" />
         <path [attr.d]="pathReal()" class="line s2" />
         @if (hover(); as h) {
@@ -54,6 +66,9 @@ interface HoverInfo {
           <strong>Year {{ h.year.year }}</strong>
           <span><i class="swatch s1"></i>{{ fmtMoney(h.year.balance) }}</span>
           <span><i class="swatch s2"></i>{{ fmtMoney(h.year.real_balance) }}</span>
+          @if (h.year.p90 > 0) {
+            <span class="muted">Range {{ fmtMoney(h.year.p10) }} – {{ fmtMoney(h.year.p90) }}</span>
+          }
           <span class="muted">Contributed {{ fmtMoney(h.year.contribution) }} · Growth {{ fmtMoney(h.year.interest_earned) }}</span>
         </div>
       } @else {
@@ -84,6 +99,10 @@ interface HoverInfo {
     }
     .swatch.s1, .dot.s1 { background: var(--series-1); }
     .swatch.s2, .dot.s2 { background: var(--series-2); }
+    .swatch.band { background: var(--series-1); opacity: 0.2; }
+    .swatch.target-swatch { background: var(--series-6); }
+    .band-area { fill: var(--series-1); opacity: 0.15; stroke: none; }
+    .target-line { stroke: var(--series-6); stroke-width: 2; stroke-dasharray: 6 4; }
     .grid { stroke: var(--gridline); stroke-width: 1; }
     .baseline { stroke: var(--baseline); stroke-width: 1; }
     .axis { font-size: 11px; fill: var(--text-muted); font-variant-numeric: tabular-nums; }
@@ -109,15 +128,39 @@ interface HoverInfo {
 })
 export class ProjectionChartComponent {
   readonly years = input.required<ProjectionYear[]>();
+  readonly target = input(0);
 
   readonly W = W;
   readonly H = H;
   readonly PAD = PAD;
   readonly hover = signal<HoverInfo | null>(null);
 
+  readonly hasBand = computed(() => this.years().some((y) => y.p90 > 0));
+
   readonly maxY = computed(() => {
     const ys = this.years();
-    return Math.max(1, ...ys.map((y) => y.balance)) * 1.05;
+    const peak = Math.max(1, ...ys.map((y) => Math.max(y.balance, y.p90)));
+    // Keep the target line on-screen when it's within reach of the scale.
+    const t = this.target();
+    return Math.max(peak, t > 0 && t < peak * 3 ? t : 0) * 1.05;
+  });
+
+  readonly targetY = computed<number | null>(() => {
+    const t = this.target();
+    if (t <= 0 || t > this.maxY()) return null;
+    return this.y(t);
+  });
+
+  readonly bandPath = computed(() => {
+    const ys = this.years();
+    if (!ys.length || !this.hasBand()) return '';
+    const upper = ys.map(
+      (y, i) => `${i === 0 ? 'M' : 'L'} ${this.x(y.year).toFixed(1)} ${this.y(y.p90).toFixed(1)}`,
+    );
+    const lower = [...ys]
+      .reverse()
+      .map((y) => `L ${this.x(y.year).toFixed(1)} ${this.y(y.p10).toFixed(1)}`);
+    return upper.join(' ') + ' ' + lower.join(' ') + ' Z';
   });
 
   private x(year: number): number {

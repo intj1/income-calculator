@@ -141,8 +141,15 @@ pub struct CapitalGains {
     pub qualified_dividends: f64,
 }
 
+fn default_tax_year() -> u16 {
+    crate::federal::DEFAULT_TAX_YEAR
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CalculationInput {
+    /// Tax year (2024-2026); unknown years fall back to the default.
+    #[serde(default = "default_tax_year")]
+    pub tax_year: u16,
     #[serde(default)]
     pub incomes: Vec<IncomeSource>,
     #[serde(default)]
@@ -317,7 +324,31 @@ pub struct CalculationOutput {
     pub rates: Rates,
     pub employer: EmployerCosts,
     pub budget: BudgetSuggestion,
+
+    /// OBBBA (2025-2028) special deductions actually applied.
+    pub tips_deduction: f64,
+    pub overtime_deduction: f64,
+
+    pub insights: Vec<Insight>,
     pub warnings: Vec<String>,
+}
+
+/// An actionable optimization suggestion derived from the inputs.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct Insight {
+    pub title: String,
+    pub detail: String,
+    /// Estimated annual dollar value of acting on the insight.
+    pub annual_value: f64,
+}
+
+/// Result of the take-home target solver.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct SolveResult {
+    /// Amount the first wage source must be set to (in its own frequency units).
+    pub required_amount: f64,
+    pub required_gross_annual: f64,
+    pub achieved_net_annual: f64,
 }
 
 // ---------- Projection ----------
@@ -340,6 +371,13 @@ pub struct ProjectionInput {
     pub contribution_growth_percent: f64,
     #[serde(default)]
     pub years: u32,
+    /// Annual return volatility (std dev), percent. 0 disables the Monte
+    /// Carlo bands. Typical equity portfolio: ~15.
+    #[serde(default)]
+    pub return_volatility_percent: f64,
+    /// Optional goal (e.g. a FIRE number). 0 = no target.
+    #[serde(default)]
+    pub target_balance: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -350,6 +388,11 @@ pub struct ProjectionYear {
     pub balance: f64,
     /// Balance deflated to today's purchasing power.
     pub real_balance: f64,
+    /// Monte Carlo 10th / 90th percentile balances (0 when volatility is 0).
+    #[serde(default)]
+    pub p10: f64,
+    #[serde(default)]
+    pub p90: f64,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -359,4 +402,8 @@ pub struct ProjectionOutput {
     pub final_real_balance: f64,
     pub total_contributed: f64,
     pub total_interest: f64,
+    /// First year the deterministic path reaches the target (None = never).
+    pub target_year_reached: Option<u32>,
+    /// Fraction of Monte Carlo trials at or above the target at the horizon.
+    pub target_probability: f64,
 }

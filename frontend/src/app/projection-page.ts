@@ -40,7 +40,20 @@ import { money } from './format';
           <span>Years</span>
           <input type="number" min="1" max="60" [ngModel]="store.projection().years" (ngModelChange)="set('years', $event, true)" />
         </label>
+        <label>
+          <span>Return volatility (% std dev)</span>
+          <input type="number" min="0" max="50" step="1" [ngModel]="store.projection().return_volatility_percent" (ngModelChange)="set('return_volatility_percent', $event)" />
+        </label>
+        <label>
+          <span>Target balance ($, e.g. FIRE number)</span>
+          <input type="number" min="0" [ngModel]="store.projection().target_balance" (ngModelChange)="set('target_balance', $event)" />
+        </label>
       </div>
+      <p class="fine">
+        Volatility > 0 adds a Monte Carlo simulation (500 market paths) — the shaded band shows the
+        10th–90th percentile outcomes. Rule of thumb for a retirement target: 25× your desired
+        annual spending (the 4% rule).
+      </p>
       @if (store.output(); as out) {
         <button type="button" class="btn ghost" (click)="useBudgetSavings()">
           Use my 20% budget savings ({{ fmtMoney(out.budget.monthly_savings * 12) }}/yr)
@@ -67,12 +80,30 @@ import { money } from './format';
             <span class="stat-num">{{ fmtMoney(proj.total_interest) }}</span>
             <span class="stat-cap">Total growth</span>
           </div>
+          @if (store.projection().target_balance > 0) {
+            <div class="stat">
+              <span class="stat-num">
+                {{ proj.target_year_reached !== null ? 'Year ' + proj.target_year_reached : 'Not reached' }}
+              </span>
+              <span class="stat-cap">Target hit (expected path)</span>
+            </div>
+            @if (store.projection().return_volatility_percent > 0) {
+              <div class="stat">
+                <span class="stat-num">{{ (proj.target_probability * 100).toFixed(0) }}%</span>
+                <span class="stat-cap">Chance of reaching target</span>
+              </div>
+            }
+          }
         </div>
-        <app-projection-chart [years]="proj.years" />
+        <app-projection-chart [years]="proj.years" [target]="store.projection().target_balance" />
       </section>
     }
   `,
   styles: `
+    .fine {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
     .muted {
       color: var(--text-muted);
       font-size: 0.85rem;

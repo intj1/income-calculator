@@ -1,10 +1,17 @@
 import { Injectable, signal } from '@angular/core';
-import init, { calculate, project, states } from './wasm/pkg/income_calc';
+import init, {
+  calculate,
+  project,
+  solve_required_gross,
+  states,
+  tax_years,
+} from './wasm/pkg/income_calc';
 import {
   CalculationInput,
   CalculationOutput,
   ProjectionInput,
   ProjectionOutput,
+  SolveResult,
   StateListEntry,
 } from './models';
 
@@ -41,5 +48,15 @@ export class WasmService {
 
   states(): StateListEntry[] {
     return JSON.parse(states()) as StateListEntry[];
+  }
+
+  taxYears(): number[] {
+    return JSON.parse(tax_years()) as number[];
+  }
+
+  solveRequiredGross(input: CalculationInput, desiredNetAnnual: number): SolveResult {
+    const out = JSON.parse(solve_required_gross(JSON.stringify(input), desiredNetAnnual));
+    if (out.error) throw new Error(out.error);
+    return out as SolveResult;
   }
 }
