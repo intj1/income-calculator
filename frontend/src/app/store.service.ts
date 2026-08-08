@@ -26,6 +26,8 @@ export class StoreService {
   readonly projection = signal<ProjectionInput>(defaultProjectionInput());
   readonly theme = signal<'system' | 'light' | 'dark'>('system');
   readonly states = signal<StateListEntry[]>([]);
+  readonly taxYears = signal<number[]>([2024, 2025, 2026]);
+  readonly shareCopied = signal(false);
 
   readonly output = computed<CalculationOutput | null>(() => {
     if (!this.wasm.ready()) return null;
@@ -57,6 +59,7 @@ export class StoreService {
 
   constructor(private wasm: WasmService) {
     this.restore();
+    this.restoreFromShareLink();
     effect(() => {
       const state: PersistedState = {
         input: this.input(),
@@ -85,6 +88,53 @@ export class StoreService {
   async init(): Promise<void> {
     await this.wasm.load();
     this.states.set(this.wasm.states());
+    this.taxYears.set(this.wasm.taxYears());
+  }
+
+  /** Required gross for a desired annual net, or null while WASM loads. */
+  solveRequiredGross(desiredNetAnnual: number) {
+    if (!this.wasm.ready() || desiredNetAnnual <= 0) return null;
+    try {
+      return this.wasm.solveRequiredGross(this.input(), desiredNetAnnual);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Scenario encoded into a URL that restores it on load. */
+  shareLink(): string {
+    const json = JSON.stringify(this.input());
+    const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(json)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    return location.origin + location.pathname + '#s=' + b64;
+  }
+
+  async copyShareLink(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.shareLink());
+      this.shareCopied.set(true);
+      setTimeout(() => this.shareCopied.set(false), 2000);
+    } catch {
+      window.prompt('Copy this link:', this.shareLink());
+    }
+  }
+
+  private restoreFromShareLink(): void {
+    const hash = location.hash;
+    if (!hash.startsWith('#s=')) return;
+    try {
+      let b64 = hash.slice(3).replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      const parsed = JSON.parse(new TextDecoder().decode(bytes)) as CalculationInput;
+      this.input.set({ ...defaultInput(), ...parsed });
+      // Drop the hash so subsequent edits + reloads use localStorage state.
+      history.replaceState(null, '', location.pathname + location.search);
+    } catch {
+      /* malformed share link — ignore */
+    }
   }
 
   /** Merge a partial patch into the calculation input (triggers recompute). */

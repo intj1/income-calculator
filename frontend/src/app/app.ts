@@ -71,8 +71,13 @@ type Tab = 'calculator' | 'projection' | 'compare' | 'about';
                 Rust calculation engine compiled to WebAssembly — nothing you type ever leaves
                 this page.
               </p>
-              <h3>What it models (US, tax year 2025)</h3>
+              <h3>What it models (US, tax years 2024–2026)</h3>
               <ul>
+                <li>Selectable tax year with year-accurate brackets, deductions, and contribution limits — including the OBBBA changes (2025+ standard deductions, $2,200 child tax credit, tips & overtime-premium deductions)</li>
+                <li>Take-home target solver: enter a desired monthly net and get the required salary</li>
+                <li>Insights: unclaimed employer match, 401(k)/HSA headroom with estimated tax savings</li>
+                <li>Monte Carlo savings projections (10th–90th percentile bands) with a FIRE-style target line and probability of success</li>
+                <li>Shareable scenario links (everything stays in the URL — nothing is uploaded)</li>
                 <li>Multiple income sources: salary, hourly (with overtime), bonus, commission, tips, self-employment, rental, interest</li>
                 <li>All pay frequencies: hourly → annual, with per-period take-home tables</li>
                 <li>Federal brackets, standard/itemized deduction, all four filing statuses</li>

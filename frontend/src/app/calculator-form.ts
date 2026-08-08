@@ -106,6 +106,14 @@ const KINDS: Array<{ value: IncomeKind; label: string }> = [
       <h2>Filing & location</h2>
       <div class="grid-3">
         <label>
+          <span>Tax year</span>
+          <select [ngModel]="inp().tax_year" (ngModelChange)="setNum('tax_year', $event, true)">
+            @for (y of store.taxYears(); track y) {
+              <option [ngValue]="y">{{ y }}</option>
+            }
+          </select>
+        </label>
+        <label>
           <span>Filing status</span>
           <select [ngModel]="inp().filing_status" (ngModelChange)="set('filing_status', $event)">
             <option value="single">Single</option>

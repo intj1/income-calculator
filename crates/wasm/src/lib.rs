@@ -34,6 +34,25 @@ pub fn states() -> String {
     serde_json::to_string(&income_calc_core::state_list()).unwrap_or_else(|_| "[]".into())
 }
 
+/// Supported tax years, e.g. [2024, 2025, 2026].
+#[wasm_bindgen]
+pub fn tax_years() -> String {
+    serde_json::to_string(&income_calc_core::supported_years()).unwrap_or_else(|_| "[]".into())
+}
+
+/// Solve for the first income source's amount needed to hit a desired annual
+/// net income. Input is a JSON CalculationInput; returns a JSON SolveResult.
+#[wasm_bindgen]
+pub fn solve_required_gross(input_json: &str, desired_net_annual: f64) -> String {
+    match serde_json::from_str::<income_calc_core::CalculationInput>(input_json) {
+        Ok(input) => {
+            let result = income_calc_core::solve_required_gross(&input, desired_net_annual);
+            serde_json::to_string(&result).unwrap_or_else(|e| error_json(&e.to_string()))
+        }
+        Err(e) => error_json(&format!("invalid input: {e}")),
+    }
+}
+
 fn error_json(msg: &str) -> String {
     format!(
         "{{\"error\":{}}}",

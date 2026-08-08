@@ -14,11 +14,30 @@ use tower_http::cors::CorsLayer;
 use tower_http::services::ServeDir;
 
 async fn health() -> Json<Value> {
-    Json(json!({ "status": "ok", "tax_year": income_calc_core::federal::TAX_YEAR }))
+    Json(json!({
+        "status": "ok",
+        "tax_years": income_calc_core::supported_years(),
+    }))
 }
 
 async fn states() -> Json<Value> {
     Json(serde_json::to_value(income_calc_core::state_list()).unwrap_or_else(|_| json!([])))
+}
+
+#[derive(serde::Deserialize)]
+struct SolveRequest {
+    input: CalculationInput,
+    desired_net_annual: f64,
+}
+
+async fn solve(Json(req): Json<SolveRequest>) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let result = income_calc_core::solve_required_gross(&req.input, req.desired_net_annual);
+    serde_json::to_value(&result).map(Json).map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": e.to_string() })),
+        )
+    })
 }
 
 async fn calculate(
@@ -52,6 +71,7 @@ async fn main() {
         .route("/states", get(states))
         .route("/calculate", post(calculate))
         .route("/project", post(project))
+        .route("/solve", post(solve))
         .layer(CorsLayer::permissive());
 
     let mut app = Router::new().nest("/api", api);
