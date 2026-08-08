@@ -10,7 +10,10 @@ pub mod fica;
 pub mod state;
 pub mod types;
 
-pub use calc::{calculate, income_curve, project, solve_required_gross, state_sweep};
+pub use calc::{
+    calculate, income_curve, k401_curve, project, roth_vs_traditional, solve_required_gross,
+    state_sweep,
+};
 pub use federal::supported_years;
 pub use types::*;
 
@@ -31,7 +34,7 @@ pub fn state_list() -> Vec<StateListEntry> {
         .map(|s| StateListEntry {
             code: s.code,
             name: s.name,
-            approximate: matches!(s.model, state::Model::FlatApprox(_)),
+            approximate: false,
             no_tax: matches!(s.model, state::Model::None),
         })
         .collect()
@@ -366,6 +369,102 @@ mod tests {
     fn state_list_complete() {
         let list = state_list();
         assert_eq!(list.len(), 52); // 50 states + DC + NONE
+    }
+
+    #[test]
+    fn virginia_brackets_exact() {
+        let mut input = salary_input(100_000.0);
+        input.state = "VA".into();
+        let out = calculate(&input);
+        // VA taxable = 100,000 AGI - 8,500 std = 91,500
+        // 2%*3,000 + 3%*2,000 + 5%*12,000 + 5.75%*(91,500-17,000) = 5,003.75
+        assert!(
+            (out.state_tax.tax - 5_003.75).abs() < 0.01,
+            "got {}",
+            out.state_tax.tax
+        );
+        assert!(!out.state_tax.approximate);
+    }
+
+    #[test]
+    fn new_jersey_brackets_exact() {
+        let mut input = salary_input(100_000.0);
+        input.state = "NJ".into();
+        let out = calculate(&input);
+        // NJ taxable = 100,000 (no std deduction)
+        // 1.4%*20,000 + 1.75%*15,000 + 3.5%*5,000 + 5.525%*35,000 + 6.37%*25,000
+        // = 280 + 262.5 + 175 + 1,933.75 + 1,592.5 = 4,243.75
+        assert!(
+            (out.state_tax.tax - 4_243.75).abs() < 0.01,
+            "got {}",
+            out.state_tax.tax
+        );
+    }
+
+    #[test]
+    fn no_state_is_approximate_anymore() {
+        let list = state_list();
+        assert!(list.iter().all(|s| !s.approximate));
+    }
+
+    #[test]
+    fn k401_curve_shows_tax_deferral_value() {
+        let mut input = salary_input(100_000.0);
+        input.pretax.employer_match_percent = 50.0;
+        input.pretax.employer_match_limit_percent = 6.0;
+        let curve = k401_curve(&input, 50.0);
+        assert_eq!(curve.len(), 51);
+        assert_eq!(curve[0].percent, 0.0);
+        // Retirement dollars strictly increase until the IRS limit clamps.
+        assert!(curve[10].retirement_total > curve[0].retirement_total);
+        // Total wealth (net + retirement) should rise with contributions
+        // thanks to tax deferral and the employer match.
+        assert!(
+            curve[10].total_wealth > curve[0].total_wealth,
+            "10%: {} vs 0%: {}",
+            curve[10].total_wealth,
+            curve[0].total_wealth
+        );
+        // Match is capped at 50% of 6% of pay = 3,000.
+        let top = curve.last().unwrap();
+        assert!(
+            (top.employer_match - 3_000.0).abs() < 1.0,
+            "got {}",
+            top.employer_match
+        );
+    }
+
+    #[test]
+    fn roth_vs_traditional_pivots_on_retirement_rate() {
+        let base = RothTradInput {
+            annual_contribution: 20_000.0,
+            years: 30,
+            annual_return_percent: 7.0,
+            contribution_growth_percent: 0.0,
+            current_marginal_rate_percent: 30.0,
+            retirement_tax_rate_percent: 20.0,
+        };
+        // Lower rate in retirement → traditional wins.
+        let lower = roth_vs_traditional(&base);
+        assert!(lower.traditional_advantage > 0.0);
+        // Higher rate in retirement → Roth wins.
+        let higher = roth_vs_traditional(&RothTradInput {
+            retirement_tax_rate_percent: 40.0,
+            ..base.clone()
+        });
+        assert!(higher.traditional_advantage < 0.0);
+        // Equal rates → a wash.
+        let equal = roth_vs_traditional(&RothTradInput {
+            retirement_tax_rate_percent: 30.0,
+            ..base.clone()
+        });
+        assert!(
+            equal.traditional_advantage.abs() < 1.0,
+            "got {}",
+            equal.traditional_advantage
+        );
+        assert!((equal.breakeven_retirement_rate_percent - 30.0).abs() < 1e-9);
+        assert_eq!(lower.years.len(), 30);
     }
 
     #[test]

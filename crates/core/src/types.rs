@@ -367,6 +367,71 @@ pub struct StateNetEntry {
     pub no_tax: bool,
 }
 
+/// One point on the 401(k) contribution optimizer curve.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct K401Point {
+    /// Traditional 401(k) contribution as percent of pay.
+    pub percent: f64,
+    pub net_annual: f64,
+    pub employee_contribution: f64,
+    pub employer_match: f64,
+    /// Employee + employer retirement dollars this year.
+    pub retirement_total: f64,
+    /// Net take-home + retirement dollars: total wealth captured this year.
+    pub total_wealth: f64,
+    pub total_tax: f64,
+}
+
+fn default_years_30() -> u32 {
+    30
+}
+fn default_return_7() -> f64 {
+    7.0
+}
+
+/// Inputs for the Roth vs Traditional lifetime comparison
+/// (equal out-of-pocket method).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RothTradInput {
+    /// Pre-tax dollars contributed per year to the traditional account. The
+    /// Roth scenario contributes the same out-of-pocket amount, i.e.
+    /// `amount × (1 − current marginal rate)`.
+    #[serde(default)]
+    pub annual_contribution: f64,
+    #[serde(default = "default_years_30")]
+    pub years: u32,
+    #[serde(default = "default_return_7")]
+    pub annual_return_percent: f64,
+    #[serde(default)]
+    pub contribution_growth_percent: f64,
+    /// Combined marginal tax rate today, percent (e.g. 30.0).
+    #[serde(default)]
+    pub current_marginal_rate_percent: f64,
+    /// Expected tax rate on withdrawals in retirement, percent.
+    #[serde(default)]
+    pub retirement_tax_rate_percent: f64,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct RothTradYear {
+    pub year: u32,
+    /// Traditional balance after paying retirement-rate tax on withdrawal.
+    pub traditional_after_tax: f64,
+    /// Roth balance (withdrawals tax-free).
+    pub roth_after_tax: f64,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct RothTradOutput {
+    pub years: Vec<RothTradYear>,
+    pub final_traditional: f64,
+    pub final_roth: f64,
+    /// Positive = traditional wins by this much.
+    pub traditional_advantage: f64,
+    /// The retirement tax rate at which both come out equal (== today's rate).
+    pub breakeven_retirement_rate_percent: f64,
+}
+
 /// Result of the take-home target solver.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct SolveResult {

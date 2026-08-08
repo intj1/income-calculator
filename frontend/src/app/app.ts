@@ -93,7 +93,9 @@ type Tab = 'calculator' | 'explore' | 'projection' | 'compare' | 'about';
                 <li>Child tax credit and other-dependent credit with AGI phase-out</li>
                 <li>Pre-tax benefits: 401(k) with employer match and IRS limits, IRA, HSA, FSA, insurance, commuter — with correct FICA treatment of cafeteria-plan items</li>
                 <li>Post-tax: Roth 401(k)/IRA (shared limits), garnishments, dues</li>
-                <li>State income tax for all 50 states + DC (real brackets for CA and NY, exact flat rates where applicable, labeled approximations elsewhere)</li>
+                <li>State income tax for all 50 states + DC with real progressive brackets and state standard deductions everywhere (state credits, exemptions, and local/county taxes are not modeled)</li>
+                <li>401(k) contribution optimizer: take-home vs retirement dollars vs total wealth at every contribution level</li>
+                <li>Roth vs Traditional lifetime comparison (equal out-of-pocket method) with your marginal rate auto-fill</li>
                 <li>Employer's true cost of employment (employer FICA, FUTA, match)</li>
                 <li>50/30/20 budget, savings projection with compound growth and inflation, scenario A/B comparison, CSV/JSON export</li>
               </ul>

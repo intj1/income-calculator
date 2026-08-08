@@ -170,6 +170,50 @@ export interface CurvePoint {
   marginal_rate: number;
 }
 
+export interface K401Point {
+  percent: number;
+  net_annual: number;
+  employee_contribution: number;
+  employer_match: number;
+  retirement_total: number;
+  total_wealth: number;
+  total_tax: number;
+}
+
+export interface RothTradInput {
+  annual_contribution: number;
+  years: number;
+  annual_return_percent: number;
+  contribution_growth_percent: number;
+  current_marginal_rate_percent: number;
+  retirement_tax_rate_percent: number;
+}
+
+export interface RothTradYear {
+  year: number;
+  traditional_after_tax: number;
+  roth_after_tax: number;
+}
+
+export interface RothTradOutput {
+  years: RothTradYear[];
+  final_traditional: number;
+  final_roth: number;
+  traditional_advantage: number;
+  breakeven_retirement_rate_percent: number;
+}
+
+export function defaultRothTradInput(): RothTradInput {
+  return {
+    annual_contribution: 20000,
+    years: 30,
+    annual_return_percent: 7,
+    contribution_growth_percent: 2,
+    current_marginal_rate_percent: 24,
+    retirement_tax_rate_percent: 15,
+  };
+}
+
 export interface StateNetEntry {
   code: string;
   name: string;

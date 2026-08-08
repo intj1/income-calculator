@@ -60,6 +60,35 @@ async fn curve(Json(req): Json<CurveRequest>) -> Result<Json<Value>, (StatusCode
     })
 }
 
+#[derive(serde::Deserialize)]
+struct K401CurveRequest {
+    input: CalculationInput,
+    #[serde(default)]
+    max_percent: f64,
+}
+
+async fn k401(Json(req): Json<K401CurveRequest>) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let result = income_calc_core::k401_curve(&req.input, req.max_percent);
+    serde_json::to_value(&result).map(Json).map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": e.to_string() })),
+        )
+    })
+}
+
+async fn roth_trad(
+    Json(input): Json<income_calc_core::RothTradInput>,
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let result = income_calc_core::roth_vs_traditional(&input);
+    serde_json::to_value(&result).map(Json).map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": e.to_string() })),
+        )
+    })
+}
+
 async fn states_sweep(
     Json(input): Json<CalculationInput>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
@@ -106,6 +135,8 @@ async fn main() {
         .route("/solve", post(solve))
         .route("/curve", post(curve))
         .route("/state-sweep", post(states_sweep))
+        .route("/k401-curve", post(k401))
+        .route("/roth-vs-traditional", post(roth_trad))
         .layer(CorsLayer::permissive());
 
     let mut app = Router::new().nest("/api", api);

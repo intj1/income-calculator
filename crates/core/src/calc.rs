@@ -341,9 +341,11 @@ pub fn calculate(input: &CalculationInput) -> CalculationOutput {
 
     // ---- 8. Employer costs ----
     let (er_ss, er_medicare, futa) = employer_fica(fica_wages, data.ss_wage_base);
+    // "X% match up to Y% of salary": the employer matches X% of employee
+    // contributions, counting contributions only up to Y% of salary.
     let match_cap = wage_annual * (p.employer_match_limit_percent / 100.0).clamp(0.0, 1.0);
     let retirement_match =
-        ((k401 + roth_401k) * (p.employer_match_percent / 100.0).max(0.0)).min(match_cap);
+        (k401 + roth_401k).min(match_cap) * (p.employer_match_percent / 100.0).max(0.0);
     let burden = er_ss + er_medicare + futa + retirement_match;
     let employer = EmployerCosts {
         social_security: er_ss,
@@ -359,7 +361,7 @@ pub fn calculate(input: &CalculationInput) -> CalculationOutput {
     if wage_annual > 0.0 {
         // Unclaimed employer match: free money left on the table.
         if p.employer_match_percent > 0.0 && p.employer_match_limit_percent > 0.0 {
-            let max_match = match_cap * (p.employer_match_percent / 100.0).min(1.0);
+            let max_match = match_cap * (p.employer_match_percent / 100.0).max(0.0);
             let unclaimed = max_match - retirement_match;
             if unclaimed > 1.0 {
                 insights.push(Insight {
@@ -541,13 +543,89 @@ pub fn state_sweep(base: &CalculationInput) -> Vec<StateNetEntry> {
                 net_annual: out.net_annual,
                 state_tax: out.state_tax.tax,
                 total_tax: out.total_tax,
-                approximate: matches!(s.model, state::Model::FlatApprox(_)),
+                approximate: false,
                 no_tax: matches!(s.model, state::Model::None),
             }
         })
         .collect();
     entries.sort_by(|a, b| b.net_annual.partial_cmp(&a.net_annual).unwrap());
     entries
+}
+
+/// Sweep the traditional 401(k) contribution percentage from 0 to
+/// `max_percent` and report take-home, retirement dollars captured (employee +
+/// employer match), and total wealth at each step. Powers the contribution
+/// optimizer chart.
+pub fn k401_curve(base: &CalculationInput, max_percent: f64) -> Vec<K401Point> {
+    let mut input = base.clone();
+    let max = if max_percent > 0.0 {
+        max_percent.min(100.0)
+    } else {
+        50.0
+    };
+    let steps = (max as usize).max(1);
+    let mut curve = Vec::with_capacity(steps + 1);
+    for i in 0..=steps {
+        let percent = max * i as f64 / steps as f64;
+        input.pretax.k401_percent = percent;
+        let out = calculate(&input);
+        let employee = out
+            .pretax_deductions
+            .first()
+            .map(|l| l.annual)
+            .unwrap_or(0.0);
+        let retirement = employee + out.employer.retirement_match;
+        curve.push(K401Point {
+            percent,
+            net_annual: out.net_annual,
+            employee_contribution: employee,
+            employer_match: out.employer.retirement_match,
+            retirement_total: retirement,
+            total_wealth: out.net_annual + retirement,
+            total_tax: out.total_tax,
+        });
+    }
+    curve
+}
+
+/// Roth vs Traditional with equal out-of-pocket cost: the traditional account
+/// receives `annual_contribution` pre-tax dollars; the Roth receives the same
+/// after-tax outlay, `annual_contribution × (1 − current rate)`. Traditional
+/// withdrawals are taxed at the retirement rate; Roth withdrawals are free.
+pub fn roth_vs_traditional(input: &RothTradInput) -> RothTradOutput {
+    let r = input.annual_return_percent / 100.0;
+    let growth = input.contribution_growth_percent / 100.0;
+    let now_rate = (input.current_marginal_rate_percent / 100.0).clamp(0.0, 0.99);
+    let ret_rate = (input.retirement_tax_rate_percent / 100.0).clamp(0.0, 0.99);
+    let n_years = input.years.clamp(1, 100);
+
+    let mut trad_balance = 0.0f64;
+    let mut roth_balance = 0.0f64;
+    let mut contribution = input.annual_contribution.max(0.0);
+    let mut years = Vec::with_capacity(n_years as usize);
+
+    for year in 1..=n_years {
+        let roth_contribution = contribution * (1.0 - now_rate);
+        // Mid-year contribution growth, same convention as project().
+        trad_balance += trad_balance * r + contribution * (1.0 + r / 2.0);
+        roth_balance += roth_balance * r + roth_contribution * (1.0 + r / 2.0);
+        years.push(RothTradYear {
+            year,
+            traditional_after_tax: trad_balance * (1.0 - ret_rate),
+            roth_after_tax: roth_balance,
+        });
+        contribution *= 1.0 + growth;
+    }
+
+    let final_traditional = trad_balance * (1.0 - ret_rate);
+    let final_roth = roth_balance;
+    RothTradOutput {
+        years,
+        final_traditional,
+        final_roth,
+        traditional_advantage: final_traditional - final_roth,
+        breakeven_retirement_rate_percent: now_rate * 100.0,
+    }
 }
 
 // ---- Projection ----

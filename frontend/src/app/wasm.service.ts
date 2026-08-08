@@ -2,7 +2,9 @@ import { Injectable, signal } from '@angular/core';
 import init, {
   calculate,
   income_curve,
+  k401_curve,
   project,
+  roth_vs_traditional,
   solve_required_gross,
   state_sweep,
   states,
@@ -12,8 +14,11 @@ import {
   CalculationInput,
   CalculationOutput,
   CurvePoint,
+  K401Point,
   ProjectionInput,
   ProjectionOutput,
+  RothTradInput,
+  RothTradOutput,
   SolveResult,
   StateListEntry,
   StateNetEntry,
@@ -74,5 +79,17 @@ export class WasmService {
     const out = JSON.parse(state_sweep(JSON.stringify(input)));
     if (out.error) throw new Error(out.error);
     return out as StateNetEntry[];
+  }
+
+  k401Curve(input: CalculationInput, maxPercent: number): K401Point[] {
+    const out = JSON.parse(k401_curve(JSON.stringify(input), maxPercent));
+    if (out.error) throw new Error(out.error);
+    return out as K401Point[];
+  }
+
+  rothVsTraditional(input: RothTradInput): RothTradOutput {
+    const out = JSON.parse(roth_vs_traditional(JSON.stringify(input)));
+    if (out.error) throw new Error(out.error);
+    return out as RothTradOutput;
   }
 }
