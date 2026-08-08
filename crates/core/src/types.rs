@@ -342,6 +342,31 @@ pub struct Insight {
     pub annual_value: f64,
 }
 
+/// One point on the gross→net income curve.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CurvePoint {
+    /// First income source's amount at this point.
+    pub amount: f64,
+    pub gross_annual: f64,
+    pub net_annual: f64,
+    pub total_tax: f64,
+    pub effective_rate: f64,
+    /// Combined federal + state marginal rate.
+    pub marginal_rate: f64,
+}
+
+/// Net income for one state under an otherwise identical scenario.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct StateNetEntry {
+    pub code: String,
+    pub name: String,
+    pub net_annual: f64,
+    pub state_tax: f64,
+    pub total_tax: f64,
+    pub approximate: bool,
+    pub no_tax: bool,
+}
+
 /// Result of the take-home target solver.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct SolveResult {

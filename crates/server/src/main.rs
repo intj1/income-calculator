@@ -40,6 +40,38 @@ async fn solve(Json(req): Json<SolveRequest>) -> Result<Json<Value>, (StatusCode
     })
 }
 
+#[derive(serde::Deserialize)]
+struct CurveRequest {
+    input: CalculationInput,
+    #[serde(default)]
+    points: usize,
+    #[serde(default)]
+    max_amount: f64,
+}
+
+async fn curve(Json(req): Json<CurveRequest>) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let points = if req.points == 0 { 60 } else { req.points };
+    let result = income_calc_core::income_curve(&req.input, points, req.max_amount);
+    serde_json::to_value(&result).map(Json).map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": e.to_string() })),
+        )
+    })
+}
+
+async fn states_sweep(
+    Json(input): Json<CalculationInput>,
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let result = income_calc_core::state_sweep(&input);
+    serde_json::to_value(&result).map(Json).map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": e.to_string() })),
+        )
+    })
+}
+
 async fn calculate(
     Json(input): Json<CalculationInput>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
@@ -72,6 +104,8 @@ async fn main() {
         .route("/calculate", post(calculate))
         .route("/project", post(project))
         .route("/solve", post(solve))
+        .route("/curve", post(curve))
+        .route("/state-sweep", post(states_sweep))
         .layer(CorsLayer::permissive());
 
     let mut app = Router::new().nest("/api", api);

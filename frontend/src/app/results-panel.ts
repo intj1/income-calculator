@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { StoreService } from './store.service';
 import { DonutChartComponent, DonutSlice } from './charts/donut-chart';
 import { BracketChartComponent } from './charts/bracket-chart';
+import { WaterfallChartComponent } from './charts/waterfall-chart';
 import { money, moneyExact, pct } from './format';
 import { PeriodAmounts } from './models';
 
@@ -25,7 +26,7 @@ const PAYCHECKS_PER_YEAR: Record<PaycheckFreq, number> = {
 @Component({
   selector: 'app-results-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DonutChartComponent, BracketChartComponent, FormsModule],
+  imports: [DonutChartComponent, BracketChartComponent, WaterfallChartComponent, FormsModule],
   template: `
     @if (store.output(); as out) {
       <section class="card hero-card">
@@ -111,6 +112,11 @@ const PAYCHECKS_PER_YEAR: Record<PaycheckFreq, number> = {
       <section class="card">
         <h2>Where the money goes</h2>
         <app-donut-chart [slices]="donutSlices()" />
+      </section>
+
+      <section class="card">
+        <h2>From gross to net</h2>
+        <app-waterfall-chart [output]="out" />
       </section>
 
       <section class="card">

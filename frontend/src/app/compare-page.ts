@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { StoreService } from './store.service';
 import { CalculatorFormComponent } from './calculator-form';
+import { CompareBarsChartComponent } from './charts/compare-bars-chart';
 import { money, pct } from './format';
 
 interface CompareRow {
@@ -15,7 +16,7 @@ interface CompareRow {
 @Component({
   selector: 'app-compare-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CalculatorFormComponent],
+  imports: [CalculatorFormComponent, CompareBarsChartComponent],
   template: `
     @if (!store.scenarioB()) {
       <section class="card">
@@ -36,6 +37,11 @@ interface CompareRow {
             Remove comparison
           </button>
         </header>
+        @if (store.output(); as a) {
+          @if (store.outputB(); as b) {
+            <app-compare-bars-chart [outputA]="a" [outputB]="b" />
+          }
+        }
         <div class="table-scroll">
           <table>
             <thead>

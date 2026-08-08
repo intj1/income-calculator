@@ -33,6 +33,16 @@ Deploys to **GitHub Pages** automatically on every push to `main`.
 - Post-tax: Roth 401(k) (shares the elective deferral limit), Roth IRA (shared IRA
   limit), life insurance, union dues, garnishments
 
+**Charts & exploration**
+- Gross→net **income curve**: your scenario recomputed at 80 income levels, with
+  effective and marginal rate panels (bracket steps visible), and a "you are
+  here" marker
+- **All-states comparison**: net income under every state's tax, sorted, with
+  your state highlighted and the "what a move would be worth" takeaway
+- Gross→net **waterfall**, take-home **donut**, federal **bracket bar**,
+  Monte Carlo **projection band**, and A/B **comparison bars** — all
+  hand-rolled SVG with hover tooltips, no chart library
+
 **Insights & tools**
 - Take-home hero with effective/marginal rates and "where the money goes" donut
 - Employer's true cost of employment (employer FICA, FUTA, 401(k) match)

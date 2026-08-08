@@ -5,8 +5,9 @@ import { CalculatorFormComponent } from './calculator-form';
 import { ResultsPanelComponent } from './results-panel';
 import { ProjectionPageComponent } from './projection-page';
 import { ComparePageComponent } from './compare-page';
+import { ExplorePageComponent } from './explore-page';
 
-type Tab = 'calculator' | 'projection' | 'compare' | 'about';
+type Tab = 'calculator' | 'explore' | 'projection' | 'compare' | 'about';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ type Tab = 'calculator' | 'projection' | 'compare' | 'about';
     ResultsPanelComponent,
     ProjectionPageComponent,
     ComparePageComponent,
+    ExplorePageComponent,
   ],
   template: `
     <header class="topbar">
@@ -57,6 +59,9 @@ type Tab = 'calculator' | 'projection' | 'compare' | 'about';
               <div class="col-results"><app-results-panel /></div>
             </div>
           }
+          @case ('explore') {
+            <app-explore-page />
+          }
           @case ('projection') {
             <app-projection-page />
           }
@@ -78,6 +83,7 @@ type Tab = 'calculator' | 'projection' | 'compare' | 'about';
                 <li>Insights: unclaimed employer match, 401(k)/HSA headroom with estimated tax savings</li>
                 <li>Monte Carlo savings projections (10th–90th percentile bands) with a FIRE-style target line and probability of success</li>
                 <li>Shareable scenario links (everything stays in the URL — nothing is uploaded)</li>
+                <li>Explore charts: gross→net income curve with effective/marginal rate panels, your net income recomputed in all 50 states + DC, a gross→net waterfall, and A/B comparison bars</li>
                 <li>Multiple income sources: salary, hourly (with overtime), bonus, commission, tips, self-employment, rental, interest</li>
                 <li>All pay frequencies: hourly → annual, with per-period take-home tables</li>
                 <li>Federal brackets, standard/itemized deduction, all four filing statuses</li>
@@ -111,6 +117,7 @@ type Tab = 'calculator' | 'projection' | 'compare' | 'about';
 export class App implements OnInit {
   readonly tabs: Array<{ id: Tab; label: string }> = [
     { id: 'calculator', label: 'Calculator' },
+    { id: 'explore', label: 'Explore' },
     { id: 'projection', label: 'Projection' },
     { id: 'compare', label: 'Compare' },
     { id: 'about', label: 'About' },
