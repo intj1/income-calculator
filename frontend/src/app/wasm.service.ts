@@ -3,6 +3,7 @@ import init, {
   calculate,
   income_curve,
   k401_curve,
+  marriage_sweep,
   project,
   roth_vs_traditional,
   solve_required_gross,
@@ -15,6 +16,7 @@ import {
   CalculationOutput,
   CurvePoint,
   K401Point,
+  MarriagePoint,
   ProjectionInput,
   ProjectionOutput,
   RothTradInput,
@@ -85,6 +87,12 @@ export class WasmService {
     const out = JSON.parse(k401_curve(JSON.stringify(input), maxPercent));
     if (out.error) throw new Error(out.error);
     return out as K401Point[];
+  }
+
+  marriageSweep(input: CalculationInput, points: number, maxPartnerIncome: number): MarriagePoint[] {
+    const out = JSON.parse(marriage_sweep(JSON.stringify(input), points, maxPartnerIncome));
+    if (out.error) throw new Error(out.error);
+    return out as MarriagePoint[];
   }
 
   rothVsTraditional(input: RothTradInput): RothTradOutput {

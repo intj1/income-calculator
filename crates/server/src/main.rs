@@ -77,6 +77,28 @@ async fn k401(Json(req): Json<K401CurveRequest>) -> Result<Json<Value>, (StatusC
     })
 }
 
+#[derive(serde::Deserialize)]
+struct MarriageSweepRequest {
+    input: CalculationInput,
+    #[serde(default)]
+    points: usize,
+    #[serde(default)]
+    max_partner_income: f64,
+}
+
+async fn marriage(
+    Json(req): Json<MarriageSweepRequest>,
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let points = if req.points == 0 { 60 } else { req.points };
+    let result = income_calc_core::marriage_sweep(&req.input, points, req.max_partner_income);
+    serde_json::to_value(&result).map(Json).map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": e.to_string() })),
+        )
+    })
+}
+
 async fn roth_trad(
     Json(input): Json<income_calc_core::RothTradInput>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
@@ -137,6 +159,7 @@ async fn main() {
         .route("/state-sweep", post(states_sweep))
         .route("/k401-curve", post(k401))
         .route("/roth-vs-traditional", post(roth_trad))
+        .route("/marriage-sweep", post(marriage))
         .layer(CorsLayer::permissive());
 
     let mut app = Router::new().nest("/api", api);

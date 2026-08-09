@@ -27,6 +27,11 @@
     </div>
   </section>
 
+  <section class="card">
+    <h2>Tax freedom day</h2>
+    <app-freedom-timeline [output]="out" />
+  </section>
+
   @if (out.insights.length) {
     <section class="card">
       <h2>💡 Insights</h2>

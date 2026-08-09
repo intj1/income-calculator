@@ -170,6 +170,13 @@ export interface CurvePoint {
   marginal_rate: number;
 }
 
+export interface MarriagePoint {
+  partner_income: number;
+  tax_single_combined: number;
+  tax_married: number;
+  bonus: number;
+}
+
 export interface K401Point {
   percent: number;
   net_annual: number;

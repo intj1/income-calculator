@@ -5,6 +5,7 @@ import { DonutChartComponent, DonutSlice } from './charts/donut-chart';
 import { BracketChartComponent } from './charts/bracket-chart';
 import { WaterfallChartComponent } from './charts/waterfall-chart';
 import { SankeyChartComponent } from './charts/sankey-chart';
+import { FreedomTimelineComponent } from './charts/freedom-timeline';
 import { money, moneyExact, pct } from './format';
 import { PeriodAmounts } from './models';
 
@@ -32,6 +33,7 @@ const PAYCHECKS_PER_YEAR: Record<PaycheckFreq, number> = {
     BracketChartComponent,
     WaterfallChartComponent,
     SankeyChartComponent,
+    FreedomTimelineComponent,
     FormsModule,
   ],
   templateUrl: './results-panel.html',

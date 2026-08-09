@@ -92,6 +92,19 @@ pub fn k401_curve(input_json: &str, max_percent: f64) -> String {
     }
 }
 
+/// Marriage bonus/penalty sweep over a hypothetical partner's income. JSON
+/// CalculationInput in, JSON Vec<MarriagePoint> out.
+#[wasm_bindgen]
+pub fn marriage_sweep(input_json: &str, points: usize, max_partner_income: f64) -> String {
+    match serde_json::from_str::<income_calc_core::CalculationInput>(input_json) {
+        Ok(input) => {
+            let sweep = income_calc_core::marriage_sweep(&input, points, max_partner_income);
+            serde_json::to_string(&sweep).unwrap_or_else(|e| error_json(&e.to_string()))
+        }
+        Err(e) => error_json(&format!("invalid input: {e}")),
+    }
+}
+
 /// Roth vs Traditional lifetime comparison. JSON RothTradInput in,
 /// JSON RothTradOutput out.
 #[wasm_bindgen]

@@ -1,0 +1,92 @@
+.wrap {
+  display: grid;
+  gap: 0.4rem;
+}
+svg {
+  width: 100%;
+}
+.legend {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 0.4rem;
+}
+.swatch.bonus {
+  background: var(--series-1);
+  opacity: 0.55;
+}
+.swatch.penalty {
+  background: var(--series-8);
+  opacity: 0.55;
+}
+.grid {
+  stroke: var(--gridline);
+  stroke-width: 1;
+}
+.zero-line {
+  stroke: var(--baseline);
+  stroke-width: 1.5;
+}
+.axis {
+  font-size: 11px;
+  fill: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.area.bonus {
+  fill: var(--series-1);
+  opacity: 0.25;
+}
+.area.penalty {
+  fill: var(--series-8);
+  opacity: 0.25;
+}
+.line {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 2;
+}
+.dot {
+  fill: var(--series-1);
+  stroke: var(--surface-1);
+  stroke-width: 2;
+}
+.dot.penalty-dot {
+  fill: var(--series-8);
+}
+.crosshair {
+  stroke: var(--baseline);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.tooltip {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  align-items: center;
+  color: var(--text-primary);
+  min-height: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+.tooltip .muted {
+  color: var(--text-muted);
+}
+.tooltip.hint {
+  color: var(--text-muted);
+}
+.delta-good {
+  color: var(--delta-good);
+  font-weight: 600;
+}
+.delta-bad {
+  color: var(--delta-bad);
+  font-weight: 600;
+}

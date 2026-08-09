@@ -3,12 +3,18 @@ import { StoreService } from './store.service';
 import { IncomeCurveChartComponent } from './charts/income-curve-chart';
 import { StateBarsChartComponent } from './charts/state-bars-chart';
 import { K401CurveChartComponent } from './charts/k401-curve-chart';
+import { MarriageChartComponent } from './charts/marriage-chart';
 import { money } from './format';
 
 @Component({
   selector: 'app-explore-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IncomeCurveChartComponent, StateBarsChartComponent, K401CurveChartComponent],
+  imports: [
+    IncomeCurveChartComponent,
+    StateBarsChartComponent,
+    K401CurveChartComponent,
+    MarriageChartComponent,
+  ],
   templateUrl: './explore-page.html',
   styleUrl: './explore-page.scss',
 })
@@ -21,6 +27,11 @@ export class ExplorePageComponent {
     const out = this.store.output();
     return !!out && out.gross.wage_annual > 0;
   });
+
+  /** The marriage what-if only makes sense when not already filing jointly. */
+  readonly showMarriage = computed(
+    () => this.store.input().filing_status !== 'married_joint' && this.hasWages(),
+  );
 
   /** Marginal value of the next +5% of 401(k) contribution. */
   readonly plusOneInsight = computed(() => {

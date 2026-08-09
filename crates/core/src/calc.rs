@@ -588,6 +588,80 @@ pub fn k401_curve(base: &CalculationInput, max_percent: f64) -> Vec<K401Point> {
     curve
 }
 
+/// Marriage bonus/penalty sweep: compare your scenario (filed single) plus a
+/// hypothetical partner earning a plain salary (filed single) against the two
+/// of you filing jointly. Your deductions/credits carry into the joint return;
+/// the partner brings only wages — a deliberate simplification.
+pub fn marriage_sweep(
+    base: &CalculationInput,
+    points: usize,
+    max_partner_income: f64,
+) -> Vec<MarriagePoint> {
+    let n = points.clamp(2, 200);
+    let max = if max_partner_income > 0.0 {
+        max_partner_income
+    } else {
+        250_000.0
+    };
+
+    // You, filing single.
+    let mut you = base.clone();
+    you.filing_status = FilingStatus::Single;
+    let tax_you = calculate(&you).total_tax;
+
+    let partner_source = |income: f64| IncomeSource {
+        label: "Partner".into(),
+        kind: IncomeKind::Salary,
+        amount: income,
+        frequency: PayFrequency::Annually,
+        hours_per_week: 40.0,
+        weeks_per_year: 52.0,
+        overtime_hours_per_week: 0.0,
+        overtime_multiplier: 1.5,
+    };
+
+    // Partner alone, filing single: plain salary, same state/year, no extras.
+    let mut partner = CalculationInput {
+        tax_year: base.tax_year,
+        incomes: vec![],
+        filing_status: FilingStatus::Single,
+        state: base.state.clone(),
+        dependents_under_17: 0,
+        other_dependents: 0,
+        itemized_deductions: 0.0,
+        age_50_plus: false,
+        pretax: Default::default(),
+        posttax: Default::default(),
+        capital_gains: Default::default(),
+    };
+
+    // Married filing jointly: your full scenario + partner's wages.
+    let mut married = base.clone();
+    married.filing_status = FilingStatus::MarriedJoint;
+
+    (0..n)
+        .map(|i| {
+            let income = max * i as f64 / (n - 1) as f64;
+            partner.incomes = vec![partner_source(income)];
+            let tax_partner = if income > 0.0 {
+                calculate(&partner).total_tax
+            } else {
+                0.0
+            };
+            married.incomes = base.incomes.clone();
+            married.incomes.push(partner_source(income));
+            let tax_married = calculate(&married).total_tax;
+            let single_combined = tax_you + tax_partner;
+            MarriagePoint {
+                partner_income: income,
+                tax_single_combined: single_combined,
+                tax_married,
+                bonus: single_combined - tax_married,
+            }
+        })
+        .collect()
+}
+
 /// Roth vs Traditional with equal out-of-pocket cost: the traditional account
 /// receives `annual_contribution` pre-tax dollars; the Roth receives the same
 /// after-tax outlay, `annual_contribution × (1 − current rate)`. Traditional
