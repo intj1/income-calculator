@@ -95,6 +95,19 @@ export class StoreService {
     }
   });
 
+  /** Marriage bonus/penalty vs a hypothetical partner's income. */
+  readonly marriageSweep = computed(() => {
+    if (!this.wasm.ready()) return [];
+    const input = this.input();
+    const out = this.output();
+    const max = Math.max(250_000, (out?.gross.total_annual ?? 0) * 2);
+    try {
+      return this.wasm.marriageSweep(input, 60, max);
+    } catch {
+      return [];
+    }
+  });
+
   constructor(private wasm: WasmService) {
     this.restore();
     this.restoreFromShareLink();

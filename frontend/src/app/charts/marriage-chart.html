@@ -1,0 +1,52 @@
+<div class="wrap">
+  <div class="legend" role="list">
+    <span role="listitem"><i class="swatch bonus"></i> Marriage bonus (tax saved)</span>
+    <span role="listitem"><i class="swatch penalty"></i> Marriage penalty (extra tax)</span>
+  </div>
+  <svg
+    [attr.viewBox]="'0 0 ' + W + ' ' + H"
+    role="img"
+    aria-label="Tax bonus or penalty of marrying, by partner income"
+    (mousemove)="onMove($event)"
+    (mouseleave)="hover.set(null)"
+  >
+    <defs>
+      <clipPath id="marriage-clip-bonus">
+        <rect [attr.x]="0" [attr.y]="0" [attr.width]="W" [attr.height]="zeroY()" />
+      </clipPath>
+      <clipPath id="marriage-clip-penalty">
+        <rect [attr.x]="0" [attr.y]="zeroY()" [attr.width]="W" [attr.height]="H - zeroY()" />
+      </clipPath>
+    </defs>
+    @for (tick of yTicks(); track tick.value) {
+      <line [attr.x1]="PAD.left" [attr.y1]="tick.y" [attr.x2]="W - PAD.right" [attr.y2]="tick.y" class="grid" />
+      <text [attr.x]="PAD.left - 8" [attr.y]="tick.y + 4" class="axis" text-anchor="end">{{ tick.label }}</text>
+    }
+    @for (tick of xTicks(); track tick.value) {
+      <text [attr.x]="tick.x" [attr.y]="H - 8" class="axis" text-anchor="middle">{{ tick.label }}</text>
+    }
+    <path [attr.d]="areaPath()" class="area bonus" clip-path="url(#marriage-clip-bonus)" />
+    <path [attr.d]="areaPath()" class="area penalty" clip-path="url(#marriage-clip-penalty)" />
+    <line [attr.x1]="PAD.left" [attr.y1]="zeroY()" [attr.x2]="W - PAD.right" [attr.y2]="zeroY()" class="zero-line" />
+    <path [attr.d]="linePath()" class="line" />
+    @if (hover(); as h) {
+      <line [attr.x1]="x(h.partner_income)" [attr.y1]="PAD.top" [attr.x2]="x(h.partner_income)" [attr.y2]="H - PAD.bottom" class="crosshair" />
+      <circle [attr.cx]="x(h.partner_income)" [attr.cy]="y(h.bonus)" r="4" class="dot" [class.penalty-dot]="h.bonus < 0" />
+    }
+  </svg>
+  @if (hover(); as h) {
+    <div class="tooltip">
+      <strong>Partner earns {{ fmtMoney(h.partner_income) }}</strong>
+      <span [class.delta-good]="h.bonus >= 0" [class.delta-bad]="h.bonus < 0">
+        {{ h.bonus >= 0 ? 'Bonus ' : 'Penalty ' }}{{ fmtMoney(h.bonus < 0 ? -h.bonus : h.bonus) }}/yr
+      </span>
+      <span class="muted">
+        Single: {{ fmtMoney(h.tax_single_combined) }} · Married: {{ fmtMoney(h.tax_married) }}
+      </span>
+    </div>
+  } @else {
+    <div class="tooltip hint">
+      Above the line, marrying saves tax; below it, you'd pay more filing jointly.
+    </div>
+  }
+</div>

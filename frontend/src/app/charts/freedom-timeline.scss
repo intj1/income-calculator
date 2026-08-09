@@ -1,0 +1,44 @@
+.wrap {
+  display: grid;
+  gap: 0.4rem;
+}
+svg {
+  width: 100%;
+}
+rect {
+  cursor: pointer;
+}
+.month-line {
+  stroke: var(--surface-1);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+.axis {
+  font-size: 10.5px;
+  fill: var(--text-muted);
+}
+.freedom-line {
+  stroke: var(--text-primary);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.freedom-label {
+  font-size: 13px;
+  font-weight: 650;
+  fill: var(--text-primary);
+}
+.tooltip {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  min-height: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+.tooltip .muted {
+  color: var(--text-muted);
+}
+.tooltip.hint {
+  color: var(--text-muted);
+}

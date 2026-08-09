@@ -40,6 +40,22 @@
   </section>
 }
 
+@if (showMarriage()) {
+  <section class="card">
+    <h2>Marriage bonus or penalty?</h2>
+    <p class="muted">
+      What happens to combined taxes if you marry, depending on what your partner earns. Your
+      full scenario carries into the joint return; the partner brings a plain salary. Single-earner
+      couples usually see a bonus; two similar high incomes can hit a penalty.
+    </p>
+    @if (store.marriageSweep().length) {
+      <app-marriage-chart [sweep]="store.marriageSweep()" />
+    } @else {
+      <p class="muted">Loading…</p>
+    }
+  </section>
+}
+
 <section class="card">
   <h2>Your net income in every state</h2>
   @if (store.stateSweep().length) {

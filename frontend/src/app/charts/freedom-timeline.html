@@ -1,0 +1,37 @@
+<div class="wrap">
+  <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" aria-label="Portion of the year worked to pay taxes">
+    @for (seg of segments(); track seg.label) {
+      <rect
+        [attr.x]="seg.x"
+        [attr.y]="PAD.top"
+        [attr.width]="seg.width"
+        [attr.height]="BAR_H"
+        rx="4"
+        [attr.fill]="'var(' + seg.colorVar + ')'"
+        stroke="var(--surface-1)"
+        stroke-width="2"
+        (mouseenter)="hovered.set(seg)"
+        (mouseleave)="hovered.set(null)"
+      />
+    }
+    @for (tick of monthTicks(); track tick.label) {
+      <line [attr.x1]="tick.lineX" [attr.y1]="PAD.top" [attr.x2]="tick.lineX" [attr.y2]="PAD.top + BAR_H" class="month-line" />
+      <text [attr.x]="tick.x" [attr.y]="H - 8" class="axis" text-anchor="middle">{{ tick.label }}</text>
+    }
+    <line [attr.x1]="freedomX()" [attr.y1]="PAD.top - 18" [attr.x2]="freedomX()" [attr.y2]="PAD.top + BAR_H + 4" class="freedom-line" />
+    <text [attr.x]="freedomX() + 6" [attr.y]="PAD.top - 8" class="freedom-label">
+      🎉 Tax freedom: {{ freedomDate() }}
+    </text>
+  </svg>
+  @if (hovered(); as seg) {
+    <div class="tooltip">
+      <strong>{{ seg.label }}</strong>
+      <span>{{ seg.days.toFixed(0) }} days of the year</span>
+      <span class="muted">{{ fmtMoney(seg.amount) }}</span>
+    </div>
+  } @else {
+    <div class="tooltip hint">
+      If every dollar you earned went to taxes first, this is the day you'd start keeping your pay.
+    </div>
+  }
+</div>

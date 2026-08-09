@@ -22,6 +22,11 @@ export class K401CurveChartComponent {
   readonly hover = signal<K401Point | null>(null);
 
   readonly maxPercent = computed(() => Math.max(1, ...this.curve().map((p) => p.percent)));
+
+  /** Marker position, clamped so an out-of-range setting doesn't draw outside the plot. */
+  readonly markerPercent = computed(() =>
+    Math.min(Math.max(0, this.currentPercent()), this.maxPercent()),
+  );
   readonly maxY = computed(
     () => Math.max(1, ...this.curve().map((p) => p.total_wealth)) * 1.04,
   );

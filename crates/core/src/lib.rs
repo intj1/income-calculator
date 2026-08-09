@@ -11,8 +11,8 @@ pub mod state;
 pub mod types;
 
 pub use calc::{
-    calculate, income_curve, k401_curve, project, roth_vs_traditional, solve_required_gross,
-    state_sweep,
+    calculate, income_curve, k401_curve, marriage_sweep, project, roth_vs_traditional,
+    solve_required_gross, state_sweep,
 };
 pub use federal::supported_years;
 pub use types::*;
@@ -465,6 +465,23 @@ mod tests {
         );
         assert!((equal.breakeven_retirement_rate_percent - 30.0).abs() < 1e-9);
         assert_eq!(lower.years.len(), 30);
+    }
+
+    #[test]
+    fn marriage_sweep_single_earner_bonus() {
+        let input = salary_input(100_000.0);
+        let sweep = marriage_sweep(&input, 50, 250_000.0);
+        assert_eq!(sweep.len(), 50);
+        assert_eq!(sweep[0].partner_income, 0.0);
+        // Single-earner household: MFJ doubles the brackets and standard
+        // deduction, so marrying a non-earner is a clear bonus.
+        assert!(sweep[0].bonus > 2_000.0, "got {}", sweep[0].bonus);
+        // Identity: bonus == single_combined - married everywhere.
+        for p in &sweep {
+            assert!((p.bonus - (p.tax_single_combined - p.tax_married)).abs() < 0.01);
+        }
+        // Partner income raises combined taxes monotonically in both worlds.
+        assert!(sweep.last().unwrap().tax_married > sweep[0].tax_married);
     }
 
     #[test]

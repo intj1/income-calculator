@@ -24,7 +24,7 @@
     <path [attr.d]="pathOf('ret')" class="line s5" />
     <path [attr.d]="pathOf('total')" class="line s3" />
     @if (currentPercent() > 0) {
-      <line [attr.x1]="x(currentPercent())" [attr.y1]="PAD.top" [attr.x2]="x(currentPercent())" [attr.y2]="H - PAD.bottom" class="marker-line" />
+      <line [attr.x1]="x(markerPercent())" [attr.y1]="PAD.top" [attr.x2]="x(markerPercent())" [attr.y2]="H - PAD.bottom" class="marker-line" />
     }
     @if (hover(); as h) {
       <line [attr.x1]="x(h.percent)" [attr.y1]="PAD.top" [attr.x2]="x(h.percent)" [attr.y2]="H - PAD.bottom" class="crosshair" />

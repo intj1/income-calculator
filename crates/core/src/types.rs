@@ -367,6 +367,19 @@ pub struct StateNetEntry {
     pub no_tax: bool,
 }
 
+/// One point on the marriage bonus/penalty curve.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct MarriagePoint {
+    /// Hypothetical partner's salary.
+    pub partner_income: f64,
+    /// Your tax + partner's tax, both filing single.
+    pub tax_single_combined: f64,
+    /// Combined tax filing jointly.
+    pub tax_married: f64,
+    /// Positive = marriage bonus (tax saved by marrying); negative = penalty.
+    pub bonus: f64,
+}
+
 /// One point on the 401(k) contribution optimizer curve.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct K401Point {
